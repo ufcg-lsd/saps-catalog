@@ -17,13 +17,13 @@ readonly CATALOG_PORT=5432
 
 # Flag to indicate use of the ArtefactBuilder dockerfile.
 # Use "-a" to assign it
-artefact_flag=0
+artefact_flag=false
 
 build() {
   local TAG="${1-latest}"
   local DOCKER_FILE_PATH="${CATALOG_DOCKER_FILE_PATH}"
 
-  if [ "${artefact_flag}" ]; then
+  if "${artefact_flag}"; then
     DOCKER_FILE_PATH=${ARTEFACT_DOCKER_FILE_PATH}
   fi
 
@@ -53,7 +53,7 @@ set_options() {
   while getopts 'a' OPTION
   do
     case ${OPTION} in
-      a) artefact_flag=1
+      a) artefact_flag=true
         ;;
       ?) echo "${USAGE}" >&2
         exit 2
