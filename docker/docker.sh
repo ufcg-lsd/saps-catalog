@@ -2,7 +2,7 @@
 
 readonly REPOSITORY=ufcgsaps/catalog
 readonly USAGE="usage: docker.sh [-a] {build|push|publish|run} <TAG>"
-readonly MY_PATH=$(cd "$(dirname "${0}")" || { echo "For some reason, the path is not accessible"; exit 1; }; pwd )
+readonly MY_PATH=$(cd "$(dirname "${0}")" || { echo "The path is not accessible"; exit 1; }; pwd )
 readonly WORKING_DIRECTORY="$(dirname "${MY_PATH}")"
 readonly CATALOG_DOCKER_FILE_PATH="${MY_PATH}/Dockerfile"
 readonly ARTEFACT_DOCKER_FILE_PATH="${MY_PATH}/ArtefactBuilder"
