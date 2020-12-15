@@ -3,3 +3,6 @@
 *.log*
 nohup.out
 saps-catalog.iml
+.classpath
+.project
+.settings/
