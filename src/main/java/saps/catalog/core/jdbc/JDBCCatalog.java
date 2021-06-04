@@ -454,9 +454,15 @@ public class JDBCCatalog implements Catalog {
   @Override
   public SapsImage getTaskById(String taskId) throws CatalogException, TaskNotFoundException {
     if (taskId == null) {
+      LOGGER.error("Null image task");
+      throw new IllegalArgumentException("Invalid image task null");
+    }
+
+    if (taskId.isEmpty()) {
       LOGGER.error("Invalid image task " + taskId);
       throw new IllegalArgumentException("Invalid image task " + taskId);
     }
+
     PreparedStatement selectStatement = null;
     Connection connection = null;
 
@@ -489,13 +495,16 @@ public class JDBCCatalog implements Catalog {
   public void removeStateChangeTime(String taskId, ImageTaskState state, Timestamp timestamp)
       throws CatalogException {
 
-    LOGGER.info(
-        "Removing task " + taskId + " state " + state.getValue() + " with timestamp " + timestamp);
-    if (taskId == null || taskId.isEmpty() || state == null) {
-      LOGGER.error("Invalid task " + taskId + " or state " + state.getValue());
+    if (taskId == null || taskId.isEmpty() || state == null || state.getValue() == null) {
+      if (state != null) {
+        LOGGER.error("Invalid task " + taskId + " or state with value " + state.getValue());
+      }
+      LOGGER.error("Invalid task " + taskId + " or state " + state);
       throw new IllegalArgumentException("Invalid task " + taskId);
     }
 
+    LOGGER.info(
+            "Removing task " + taskId + " state " + state.getValue() + " with timestamp " + timestamp);
     PreparedStatement removeStatement = null;
     Connection connection = null;
 
