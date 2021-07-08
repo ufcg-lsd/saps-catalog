@@ -1,16 +1,17 @@
 #!/usr/bin/python3
 
-import requests
+import psycopg2
 import json
-import operator
 import argparse
 
 def parseArguments():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("dispatcher_address", help="Dispatcher Address and Port", type=str)
-    parser.add_argument("userEmail", help="User Email",type=str)
-    parser.add_argument("userPass", help="User Password",type=str)
+    parser.add_argument("catalog_address", help="Catalog Address", type=str)
+    parser.add_argument("catalog_port", help="Catalog Port", type=str)
+    parser.add_argument("catalog_db_name", help="Catalog Database Name", type=str)
+    parser.add_argument("catalog_user_name", help="Catalog user",type=str)
+    parser.add_argument("catalog_user_password", help="Catalog Password",type=str)
 
     #Optional Argument
     parser.add_argument("-n", "--number", help="Number of tasks to show", type=int, default=10)
@@ -18,30 +19,43 @@ def parseArguments():
     args = parser.parse_args()
     return args
 
-def getTasks(url,headers,total = 10):
+def result_to_dic(query_result):
+    result = str(query_result)[2:-3].replace("\'", "\"")
 
-    # Send get request
-    res = requests.get(url,headers = headers)
+    tasks = json.loads(result)
+    return tasks
 
-    # Get list of tasks and sort by updateTime
-    tasks = json.loads(res.text)
-    sorted_tasks = sorted(tasks,key=operator.itemgetter('updateTime'), reverse=True)
 
-    # Check if the number of tasks to see is bigger than the number of tasks that exists
-    if(total > len(sorted_tasks)):
-        total = len(sorted_tasks)
+def getTasks(mydb,total = 10):
+
+    mycursor = mydb.cursor()
+
+    query = "select json_agg(t) from (select * from tasks order by updated_time desc FETCH first " + str(total) + " rows only) t"
+
+    # Get list of tasks sorted by updateTime
+    mycursor.execute(query)
+
+    query_result = mycursor.fetchall()
+
+    tasks = result_to_dic(query_result)
+
 
     print("taskId | dataset | region | imageDate | state")
 
     for i in range(total):
-        task = sorted_tasks[i]
-        print(task['taskId'] + " | " + task['dataset'] + " | " + task['region'] + " | " + task['imageDate'] + " | " + task['state'])
+        task = tasks[i]
+        print(task['task_id'] + " | " + task['dataset'] + " | " + task['region'] + " | " + task['image_date'] + " | " + task['state'])
 
 if __name__ == '__main__':
     # Parse the arguments
     args = parseArguments()
 
-    url = "http://" + args.dispatcher_address + "/processings"
-    headers = {'userEmail': args.userEmail,'userPass': args.userPass}
+    mydb = psycopg2.connect(
+    host=args.catalog_address,
+    user=args.catalog_user_name,
+    password=args.catalog_user_password,
+    database=args.catalog_db_name,
+    port=args.catalog_port
+    )
 
-    getTasks(url,headers,args.number)
+    getTasks(mydb,args.number)
