@@ -17,6 +17,12 @@ import saps.catalog.core.retry.catalog.GetTasksRetry;
 import saps.catalog.core.retry.catalog.GetUser;
 import saps.catalog.core.retry.catalog.UpdateTaskRetry;
 import saps.catalog.core.retry.catalog.exceptions.CatalogRetryException;
+
+import saps.catalog.core.retry.catalog.GetTasksOnGoingWithPagination;
+import saps.catalog.core.retry.catalog.GetTasksCompletedWithPagination;
+import saps.catalog.core.retry.catalog.GetTasksCountOnGoing;
+import saps.catalog.core.retry.catalog.GetTasksCountCompleted;
+
 import saps.common.core.model.SapsImage;
 import saps.common.core.model.SapsUser;
 import saps.common.core.model.enums.ImageTaskState;
@@ -256,4 +262,21 @@ public class CatalogUtils {
   public static List<SapsImage> getAllTasks(Catalog imageStore, String message) {
     return retry(new GetAllTasks(imageStore), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
+
+  public static List<SapsImage> getTasksOnGoingWithPagination(Catalog imageStore, Integer page, Integer size, String message) {
+    return retry(new GetTasksOnGoingWithPagination(imageStore, page, size), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  }
+
+  public static List<SapsImage> getTasksCompletedWithPagination(Catalog imageStore, Integer page, Integer size, String message) {
+    return retry(new GetTasksCompletedWithPagination(imageStore, page, size), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  }
+
+  public static Integer getTasksCountOnGoing(Catalog imageStore, String message) {
+    return retry(new GetTasksCountOnGoing(imageStore), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  }
+
+  public static Integer getTasksCountCompleted(Catalog imageStore, String message) {
+    return retry(new GetTasksCountCompleted(imageStore), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  }
+
 }

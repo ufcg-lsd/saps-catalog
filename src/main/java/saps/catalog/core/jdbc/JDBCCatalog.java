@@ -562,4 +562,100 @@ public class JDBCCatalog implements Catalog {
       close(queryStatement, connection);
     }
   }
+
+
+  @Override
+  public List<SapsImage> getTasksOnGoingWithPagination(Integer page, Integer size) throws CatalogException {
+    Connection connection = null;
+    PreparedStatement queryStatement = null;
+    Integer offset = (page - 1) * size;
+    Integer nextRows = size;
+
+    try {
+      connection = getConnection();
+
+      queryStatement =
+          connection.prepareStatement(JDBCCatalogConstants.Queries.Select.TASKS_ONGOING_WITH_PAGINATION);
+          queryStatement.setInt(1, offset);
+          queryStatement.setInt(2, nextRows);
+          queryStatement.setQueryTimeout(300);
+
+      queryStatement.execute();
+      ResultSet rs = queryStatement.getResultSet();
+      return JDBCCatalogUtil.extractSapsTasks(rs);
+    } catch (SQLException e) {
+      throw new CatalogException("Error while select all tasks");
+    } catch (JDBCCatalogException e) {
+      throw new CatalogException("Error while extract all tasks");
+    } finally {
+      close(queryStatement, connection);
+    }
+  }
+
+  @Override
+  public List<SapsImage> getTasksCompletedWithPagination(Integer page, Integer size) throws CatalogException {
+    Connection connection = null;
+    PreparedStatement queryStatement = null;
+    Integer offset = (page - 1) * size;
+    Integer nextRows = size;
+
+    try {
+      connection = getConnection();
+
+      queryStatement =
+          connection.prepareStatement(JDBCCatalogConstants.Queries.Select.TASKS_COMPLETED_WITH_PAGINATION);
+          queryStatement.setInt(1, offset);
+          queryStatement.setInt(2, nextRows);
+          queryStatement.setQueryTimeout(300);
+
+      queryStatement.execute();
+      ResultSet rs = queryStatement.getResultSet();
+      return JDBCCatalogUtil.extractSapsTasks(rs);
+    } catch (SQLException e) {
+      throw new CatalogException("Error while select all tasks");
+    } catch (JDBCCatalogException e) {
+      throw new CatalogException("Error while extract all tasks");
+    } finally {
+      close(queryStatement, connection);
+    }
+  }
+
+  @Override
+  public Integer getTasksCountOnGoing() throws CatalogException {
+    Statement statement = null;
+    Connection conn = null;
+    try {
+      conn = getConnection();
+      statement = conn.createStatement();
+      statement.setQueryTimeout(300);
+      ResultSet rs = statement.executeQuery(JDBCCatalogConstants.Queries.Select.TASKS_ONGOING_COUNT); 
+
+      rs.next();
+      return rs.getInt("count");  
+    } catch (SQLException e) {
+      throw new CatalogException("Error while select all tasks");
+    } finally {
+      close(statement, conn);
+    }
+  }
+
+  @Override
+  public Integer getTasksCountCompleted() throws CatalogException {
+    Statement statement = null;
+    Connection conn = null;
+    try {
+      conn = getConnection();
+      statement = conn.createStatement();
+      statement.setQueryTimeout(300);
+      ResultSet rs = statement.executeQuery(JDBCCatalogConstants.Queries.Select.TASKS_COMPLETED_COUNT);
+       
+      rs.next();
+      return rs.getInt("count");  
+    } catch (SQLException e) {
+      throw new CatalogException("Error while select all tasks");
+    } finally {
+      close(statement, conn);
+    }
+  }
+
 }
