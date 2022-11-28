@@ -138,9 +138,9 @@ public interface Catalog {
       String processingTag)
       throws CatalogException;
 
-  List<SapsImage> getTasksOnGoingWithPagination(Integer page, Integer size) throws CatalogException;
+  List<SapsImage> getTasksOnGoingWithPagination(Integer page, Integer size, String sortField, String sortOrder) throws CatalogException;
 
-  List<SapsImage> getTasksCompletedWithPagination(Integer page, Integer size) throws CatalogException;
+  List<SapsImage> getTasksCompletedWithPagination(Integer page, Integer size, String sortField, String sortOrder) throws CatalogException;
 
   Integer getTasksCountOnGoing() throws CatalogException;
 

@@ -263,12 +263,12 @@ public class CatalogUtils {
     return retry(new GetAllTasks(imageStore), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 
-  public static List<SapsImage> getTasksOnGoingWithPagination(Catalog imageStore, Integer page, Integer size, String message) {
-    return retry(new GetTasksOnGoingWithPagination(imageStore, page, size), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  public static List<SapsImage> getTasksOnGoingWithPagination(Catalog imageStore, Integer page, Integer size, String sortField, String sortOrder, String message) {
+    return retry(new GetTasksOnGoingWithPagination(imageStore, page, size, sortField, sortOrder), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 
-  public static List<SapsImage> getTasksCompletedWithPagination(Catalog imageStore, Integer page, Integer size, String message) {
-    return retry(new GetTasksCompletedWithPagination(imageStore, page, size), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  public static List<SapsImage> getTasksCompletedWithPagination(Catalog imageStore, Integer page, Integer size, String sortField, String sortOrder, String message) {
+    return retry(new GetTasksCompletedWithPagination(imageStore, page, size, sortField, sortOrder), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 
   public static Integer getTasksCountOnGoing(Catalog imageStore, String message) {

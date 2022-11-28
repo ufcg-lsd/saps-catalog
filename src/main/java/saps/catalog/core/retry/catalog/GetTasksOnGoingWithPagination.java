@@ -10,16 +10,20 @@ public class GetTasksOnGoingWithPagination implements CatalogRetry<List<SapsImag
   private Catalog imageStore;
   private Integer page;
   private Integer size;
+  private String sortField;
+  private String sortOrder;
 
-  public GetTasksOnGoingWithPagination(Catalog imageStore, Integer page, Integer size) {
+  public GetTasksOnGoingWithPagination(Catalog imageStore, Integer page, Integer size, String sortField, String sortOrder) {
     this.imageStore = imageStore;
     this.page = page;
     this.size = size;
+    this.sortField = sortField; 
+    this.sortOrder = sortOrder;
   }
 
   @Override
   public List<SapsImage> run() {
-    return imageStore.getTasksOnGoingWithPagination(page, size);
+    return imageStore.getTasksOnGoingWithPagination(page, size, sortField, sortOrder);
   }
 }
 

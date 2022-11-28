@@ -127,26 +127,6 @@ public class JDBCCatalogConstants {
     public final class Select {
       public static final String TASKS = "SELECT * FROM " + JDBCCatalogConstants.TablesName.TASKS;
 
-      public static final String TASKS_ONGOING_WITH_PAGINATION = 
-          "SELECT * FROM " 
-              + JDBCCatalogConstants.TablesName.TASKS
-              + " WHERE "
-              + Tables.Task.STATE
-              + " <> 'archived' AND "
-              + Tables.Task.STATE
-              + " <> 'failed' "
-              + " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-
-      public static final String TASKS_COMPLETED_WITH_PAGINATION = 
-          "SELECT * FROM " 
-              + JDBCCatalogConstants.TablesName.TASKS
-              + " WHERE "
-              + Tables.Task.STATE
-              + " = 'archived' OR "
-              + Tables.Task.STATE
-              + " = 'failed' "
-              + " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-
       public static final String TASKS_ONGOING_COUNT = 
           "SELECT COUNT(*) FROM " 
               + JDBCCatalogConstants.TablesName.TASKS

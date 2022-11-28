@@ -42,8 +42,7 @@ public class JDBCCatalog implements Catalog {
     String dbName = properties.getProperty(JDBCCatalogConstants.Database.NAME);
 
     LOGGER.info("Creating connection pool for Catalog " + dbIP + ":" + dbPort);
-    this.connectionPool =
-        createConnectionPool(dbURLPrefix, dbIP, dbPort, dbUserName, dbUserPass, dbDrive, dbName);
+    this.connectionPool = createConnectionPool(dbURLPrefix, dbIP, dbPort, dbUserName, dbUserPass, dbDrive, dbName);
 
     LOGGER.info("Creating (if not exists) tables for SAPS schema");
     createTable();
@@ -53,11 +52,11 @@ public class JDBCCatalog implements Catalog {
 
   private boolean checkProperties(Properties properties) {
     String[] propertiesSet = {
-      JDBCCatalogConstants.Database.IP,
-      JDBCCatalogConstants.Database.USERNAME,
-      JDBCCatalogConstants.Database.PASSWORD,
-      JDBCCatalogConstants.Database.DRIVER,
-      JDBCCatalogConstants.Database.NAME
+        JDBCCatalogConstants.Database.IP,
+        JDBCCatalogConstants.Database.USERNAME,
+        JDBCCatalogConstants.Database.PASSWORD,
+        JDBCCatalogConstants.Database.DRIVER,
+        JDBCCatalogConstants.Database.NAME
     };
 
     return SapsPropertiesUtil.checkProperties(properties, propertiesSet);
@@ -165,27 +164,26 @@ public class JDBCCatalog implements Catalog {
       String digestProcessing)
       throws CatalogException {
     Timestamp now = new Timestamp(System.currentTimeMillis());
-    SapsImage task =
-        new SapsImage(
-            taskId,
-            dataset,
-            region,
-            date,
-            ImageTaskState.CREATED,
-            SapsImage.NONE_ARREBOL_JOB_ID,
-            SapsImage.NONE_FEDERATION_MEMBER,
-            priority,
-            user,
-            inputdownloadingPhaseTag,
-            digestInputdownloading,
-            preprocessingPhaseTag,
-            digestPreprocessing,
-            processingPhaseTag,
-            digestProcessing,
-            now,
-            now,
-            SapsImage.AVAILABLE,
-            SapsImage.NON_EXISTENT_DATA);
+    SapsImage task = new SapsImage(
+        taskId,
+        dataset,
+        region,
+        date,
+        ImageTaskState.CREATED,
+        SapsImage.NONE_ARREBOL_JOB_ID,
+        SapsImage.NONE_FEDERATION_MEMBER,
+        priority,
+        user,
+        inputdownloadingPhaseTag,
+        digestInputdownloading,
+        preprocessingPhaseTag,
+        digestPreprocessing,
+        processingPhaseTag,
+        digestProcessing,
+        now,
+        now,
+        SapsImage.AVAILABLE,
+        SapsImage.NON_EXISTENT_DATA);
 
     if (task.getTaskId() == null || task.getTaskId().isEmpty()) {
       LOGGER.error("Task with empty id.");
@@ -438,8 +436,7 @@ public class JDBCCatalog implements Catalog {
   }
 
   private String buildTaskByStateQuery(int states) {
-    StringBuilder query =
-        new StringBuilder(JDBCCatalogConstants.Queries.Select.TASKS + " WHERE state in (");
+    StringBuilder query = new StringBuilder(JDBCCatalogConstants.Queries.Select.TASKS + " WHERE state in (");
     for (int i = 0; i < states; i++) {
       if (i == states - 1) {
         query.append("?) ");
@@ -478,7 +475,8 @@ public class JDBCCatalog implements Catalog {
       ResultSet rs = selectStatement.getResultSet();
       List<SapsImage> imageDatas = JDBCCatalogUtil.extractSapsTasks(rs);
 
-      if (imageDatas.size() == 0) throw new TaskNotFoundException("There is no task with id");
+      if (imageDatas.size() == 0)
+        throw new TaskNotFoundException("There is no task with id");
 
       rs.close();
       return imageDatas.get(0);
@@ -504,7 +502,7 @@ public class JDBCCatalog implements Catalog {
     }
 
     LOGGER.info(
-            "Removing task " + taskId + " state " + state.getValue() + " with timestamp " + timestamp);
+        "Removing task " + taskId + " state " + state.getValue() + " with timestamp " + timestamp);
     PreparedStatement removeStatement = null;
     Connection connection = null;
 
@@ -541,8 +539,7 @@ public class JDBCCatalog implements Catalog {
     try {
       connection = getConnection();
 
-      queryStatement =
-          connection.prepareStatement(JDBCCatalogConstants.Queries.Select.FILTER_TASKS);
+      queryStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.FILTER_TASKS);
       queryStatement.setString(1, state.getValue());
       queryStatement.setString(2, region);
       queryStatement.setDate(3, javaDateToSqlDate(initDate));
@@ -563,60 +560,65 @@ public class JDBCCatalog implements Catalog {
     }
   }
 
-
   @Override
-  public List<SapsImage> getTasksOnGoingWithPagination(Integer page, Integer size) throws CatalogException {
+  public List<SapsImage> getTasksOnGoingWithPagination(Integer page, Integer size, String sortField, String sortOrder)
+      throws CatalogException {
+    Statement statement = null;
     Connection connection = null;
-    PreparedStatement queryStatement = null;
-    Integer offset = (page - 1) * size;
-    Integer nextRows = size;
 
     try {
       connection = getConnection();
+      statement = connection.createStatement();
+      statement.setQueryTimeout(300);
 
-      queryStatement =
-          connection.prepareStatement(JDBCCatalogConstants.Queries.Select.TASKS_ONGOING_WITH_PAGINATION);
-          queryStatement.setInt(1, offset);
-          queryStatement.setInt(2, nextRows);
-          queryStatement.setQueryTimeout(300);
+      // TODO refact this
+      String orderByQuery = sortField.isEmpty() ? "" : " ORDER BY " + sortField + " " + sortOrder.toUpperCase();
+      ResultSet rs = statement.executeQuery(
+          "SELECT * FROM " + JDBCCatalogConstants.TablesName.TASKS
+              + " WHERE " + JDBCCatalogConstants.Tables.Task.STATE + " <> 'archived' "
+              + " AND " + JDBCCatalogConstants.Tables.Task.STATE + " <> 'failed' "
+              + orderByQuery
+              + " OFFSET " + (page - 1) * size
+              + " ROWS FETCH NEXT " + size + " ROWS ONLY");
 
-      queryStatement.execute();
-      ResultSet rs = queryStatement.getResultSet();
       return JDBCCatalogUtil.extractSapsTasks(rs);
     } catch (SQLException e) {
       throw new CatalogException("Error while select all tasks");
     } catch (JDBCCatalogException e) {
       throw new CatalogException("Error while extract all tasks");
     } finally {
-      close(queryStatement, connection);
+      close(statement, connection);
     }
   }
 
   @Override
-  public List<SapsImage> getTasksCompletedWithPagination(Integer page, Integer size) throws CatalogException {
+  public List<SapsImage> getTasksCompletedWithPagination(Integer page, Integer size, String sortField, String sortOrder)
+      throws CatalogException {
+    Statement statement = null;
     Connection connection = null;
-    PreparedStatement queryStatement = null;
-    Integer offset = (page - 1) * size;
-    Integer nextRows = size;
 
     try {
       connection = getConnection();
+      statement = connection.createStatement();
+      statement.setQueryTimeout(300);
 
-      queryStatement =
-          connection.prepareStatement(JDBCCatalogConstants.Queries.Select.TASKS_COMPLETED_WITH_PAGINATION);
-          queryStatement.setInt(1, offset);
-          queryStatement.setInt(2, nextRows);
-          queryStatement.setQueryTimeout(300);
-
-      queryStatement.execute();
-      ResultSet rs = queryStatement.getResultSet();
+      // TODO refact this
+      String orderByQuery = sortField.isEmpty() ? "" : " ORDER BY " + sortField + " " + sortOrder.toUpperCase();
+      String PSQLQUERY = "SELECT * FROM " + JDBCCatalogConstants.TablesName.TASKS
+          + " WHERE " + JDBCCatalogConstants.Tables.Task.STATE + " = 'archived' "
+          + " OR " + JDBCCatalogConstants.Tables.Task.STATE + " = 'failed' "
+          + orderByQuery
+          + " OFFSET " + (page - 1) * size
+          + " ROWS FETCH NEXT " + size + " ROWS ONLY";
+          
+      ResultSet rs = statement.executeQuery(PSQLQUERY);
       return JDBCCatalogUtil.extractSapsTasks(rs);
     } catch (SQLException e) {
       throw new CatalogException("Error while select all tasks");
     } catch (JDBCCatalogException e) {
       throw new CatalogException("Error while extract all tasks");
     } finally {
-      close(queryStatement, connection);
+      close(statement, connection);
     }
   }
 
@@ -628,10 +630,10 @@ public class JDBCCatalog implements Catalog {
       conn = getConnection();
       statement = conn.createStatement();
       statement.setQueryTimeout(300);
-      ResultSet rs = statement.executeQuery(JDBCCatalogConstants.Queries.Select.TASKS_ONGOING_COUNT); 
+      ResultSet rs = statement.executeQuery(JDBCCatalogConstants.Queries.Select.TASKS_ONGOING_COUNT);
 
       rs.next();
-      return rs.getInt("count");  
+      return rs.getInt("count");
     } catch (SQLException e) {
       throw new CatalogException("Error while select all tasks");
     } finally {
@@ -648,9 +650,9 @@ public class JDBCCatalog implements Catalog {
       statement = conn.createStatement();
       statement.setQueryTimeout(300);
       ResultSet rs = statement.executeQuery(JDBCCatalogConstants.Queries.Select.TASKS_COMPLETED_COUNT);
-       
+
       rs.next();
-      return rs.getInt("count");  
+      return rs.getInt("count");
     } catch (SQLException e) {
       throw new CatalogException("Error while select all tasks");
     } finally {
