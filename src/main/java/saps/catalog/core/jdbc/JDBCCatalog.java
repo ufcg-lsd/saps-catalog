@@ -387,23 +387,28 @@ public class JDBCCatalog implements Catalog {
       return null;
     }
 
-    LOGGER.info("===== ENTROU NO GET LANDSAT JDB ");
-
     PreparedStatement statement = null;
     Connection connection = null;
 
     try {
       connection = getConnection();
+
+      LOGGER.info("===== CONECTOU");
       statement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.LANDSAT_IMAGES);
       statement.setString(1, region);
       statement.setDate(2, (java.sql.Date) date);
       statement.setString(3, landsat);
       statement.setQueryTimeout(300);
+      LOGGER.info("===== MONTOU A CONSULTA");
 
       statement.execute();
+      LOGGER.info("===== EXECUTOU A CONSULTA");
 
       ResultSet rs = statement.getResultSet();
-      return JDBCCatalogUtil.extractSapsImages(rs);
+      List<SapsLandsatImage> result = JDBCCatalogUtil.extractSapsImages(rs);
+      LOGGER.info("===== EXTRAIU");
+      return result;
+      
     } catch (SQLException e) {
       throw new CatalogException("Erro while select landsat images");
     } catch (JDBCCatalogException e) {
