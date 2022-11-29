@@ -405,7 +405,7 @@ public class JDBCCatalog implements Catalog {
     } catch (SQLException e) {
       throw new CatalogException("Erro while select landsat images");
     } catch (JDBCCatalogException e) {
-      throw new CatalogException("Error while extract all tasks");
+      throw new CatalogException("Error while getting landsat images");
     } finally {
       close(statement, connection);
     }

@@ -22,6 +22,7 @@ import saps.catalog.core.retry.catalog.GetUser;
 import saps.catalog.core.retry.catalog.UpdateTaskRetry;
 import saps.catalog.core.retry.catalog.exceptions.CatalogRetryException;
 import saps.common.core.model.SapsImage;
+import saps.common.core.model.SapsLandsatImage;
 import saps.common.core.model.SapsUser;
 import saps.common.core.model.enums.ImageTaskState;
 
@@ -191,8 +192,12 @@ public class CatalogUtils {
     //Collection <SapsLandsatImage> newColl = (validateLandsatImage(imageStore, region, date, dataset, message))
     //if newColl.length > 0: then continue, else return (?)
 
-    return retry(
-        new AddNewTask(
+    List<SapsLandsatImage> landsatImagesList = validateLandsatImage(imageStore, region, date, digestProcessing, message);
+    if (landsatImagesList.size() > 0) {
+      LOGGER.info("image has been found");
+
+      return retry(
+          new AddNewTask(
             imageStore,
             taskId,
             dataset,
@@ -206,9 +211,13 @@ public class CatalogUtils {
             digestPreprocessing,
             processingPhaseTag,
             digestProcessing),
-        CATALOG_DEFAULT_SLEEP_SECONDS,
-        message);
+            CATALOG_DEFAULT_SLEEP_SECONDS,
+            message);
       }
+
+      LOGGER.info("image has NOT been found");
+      return null;
+    }
 
   /** 
    * This function checks if we got a valid image
@@ -220,7 +229,7 @@ public class CatalogUtils {
    * @return boolean indicating if the image does exist or not
    * 
    */
-    private static List<SapsImage> validateLandsatImage(Catalog imageStore, String region, Timestamp date, String landsat, String message) {
+    private static List<LandsatSapsImage> validateLandsatImage(Catalog imageStore, String region, Date date, String landsat, String message) {
       // SQL QUERY, if we got the image return TRUE, else return FALSE
       return retry(new GetLandsatImages(imageStore, region, date, landsat), CATALOG_DEFAULT_SLEEP_SECONDS, message);
     }     
