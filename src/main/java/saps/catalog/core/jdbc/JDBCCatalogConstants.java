@@ -1,8 +1,6 @@
 /* (C)2020 */
 package saps.catalog.core.jdbc;
 
-import java.security.Timestamp;
-
 public class JDBCCatalogConstants {
   public final class Database {
     public static final String USERNAME = "datastore_username";
@@ -137,7 +135,7 @@ public class JDBCCatalogConstants {
       public static final String TASKS = "SELECT * FROM " + JDBCCatalogConstants.TablesName.TASKS;
 
       public static final String LANDSAT_IMAGES = "SELECT * FROM " + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES
-      + "WHERE EXISTS (SELECT * FROM landsat_images AS li WHERE li.region LIKE %region% AND li.date_acquired = date AND li.spacecraft_id = landsat";
+      + " WHERE EXISTS (SELECT * FROM landsat_images AS li WHERE li.region LIKE %?% AND li.date_acquired = ? AND li.spacecraft_id = ? ";
 
       public static final String USER =
           "SELECT * FROM "

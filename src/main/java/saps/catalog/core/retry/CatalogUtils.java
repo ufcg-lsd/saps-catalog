@@ -1,7 +1,6 @@
 /* (C)2020 */
 package saps.catalog.core.retry;
 
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
