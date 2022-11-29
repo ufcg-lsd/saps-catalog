@@ -73,9 +73,9 @@ public class JDBCCatalogUtil {
         if (!rs.next()) break;
         validImages.add(
           new SapsLandsatImage(
-          rs.getString(JDBCCatalogConstants.Tables.LandsatImages.DATASET),
           rs.getString(JDBCCatalogConstants.Tables.LandsatImages.REGION),
-          rs.getString(JDBCCatalogConstants.Tables.LandsatImages.DATE)));
+          rs.getDate(JDBCCatalogConstants.Tables.LandsatImages.DATE),
+          rs.getString(JDBCCatalogConstants.Tables.LandsatImages.DATASET)));
       } catch (SQLException e) {
         throw new JDBCCatalogException("Error while extract landsat images", e);
       }

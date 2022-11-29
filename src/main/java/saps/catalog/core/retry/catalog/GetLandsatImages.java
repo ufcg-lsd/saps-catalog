@@ -1,11 +1,9 @@
 package saps.catalog.core.retry.catalog;
 
 import java.util.List;
-import java.sql.Timestamp;
 import java.util.Date;
 import saps.catalog.core.Catalog;
 import saps.common.core.model.SapsLandsatImage;
-import saps.common.core.model.SapsImage;
 
 public class GetLandsatImages implements CatalogRetry<List<SapsLandsatImage>> {
     
