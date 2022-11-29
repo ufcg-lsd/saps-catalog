@@ -1,6 +1,8 @@
 /* (C)2020 */
 package saps.catalog.core.jdbc;
 
+import java.security.Timestamp;
+
 public class JDBCCatalogConstants {
   public final class Database {
     public static final String USERNAME = "datastore_username";
@@ -19,6 +21,7 @@ public class JDBCCatalogConstants {
     public static final String NOTIFY = "NOTIFY";
     public static final String DEPLOY_CONFIG = "DEPLOY_CONFIG";
     public static final String PROVENANCE_DATA = "PROVENANCE_DATA";
+    public static final String LANDSAT_IMAGES = "LANDSAT_IMAGES";
   }
 
   public final class Tables {
@@ -55,6 +58,12 @@ public class JDBCCatalogConstants {
           public static final String DIGEST = "processing_digest";
         }
       }
+    }
+
+    public final class LandsatImages {
+      public static final String DATE = "sensing_time";
+      public static final String REGION = "product_id";
+      public static final String DATASET = "spacecraft_id";
     }
 
     public final class User {
@@ -126,6 +135,9 @@ public class JDBCCatalogConstants {
 
     public final class Select {
       public static final String TASKS = "SELECT * FROM " + JDBCCatalogConstants.TablesName.TASKS;
+
+      public static final String LANDSAT_IMAGES = "SELECT * FROM " + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES
+      + "WHERE EXISTS (SELECT * FROM landsat_images AS li WHERE li.region LIKE %region% AND li.date_acquired = date AND li.spacecraft_id = landsat";
 
       public static final String USER =
           "SELECT * FROM "
@@ -323,4 +335,16 @@ public class JDBCCatalogConstants {
             + JDBCCatalogConstants.Tables.ProvenanceData.OUTPUT_KERNEL_VERSION
             + " VARCHAR(100) )";
   }
+
+  
+  /* down the road it will create a new table, for landsat_images. but that's not necessary now
+  public static final String LANDSAT_IMAGES = 
+  "CREATE TABLE IF NOT EXISTS " 
+  + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES 
+  + "("
+  + JDBCCatalogConstants.Tables.LandsatImages.REGION
+  + " VARCHAR(40), " 
+  + JDBCCatalogConstants.Tables.LandsatImages.DATE
+  */
+
 }

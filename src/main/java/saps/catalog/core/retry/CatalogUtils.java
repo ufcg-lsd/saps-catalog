@@ -1,15 +1,19 @@
 /* (C)2020 */
 package saps.catalog.core.retry;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+
 import org.apache.log4j.Logger;
+
 import saps.catalog.core.Catalog;
 import saps.catalog.core.retry.catalog.AddNewTask;
 import saps.catalog.core.retry.catalog.AddNewUser;
 import saps.catalog.core.retry.catalog.AddTimestampRetry;
 import saps.catalog.core.retry.catalog.CatalogRetry;
 import saps.catalog.core.retry.catalog.GetAllTasks;
+import saps.catalog.core.retry.catalog.GetLandsatImages;
 import saps.catalog.core.retry.catalog.GetProcessedTasks;
 import saps.catalog.core.retry.catalog.GetProcessingTasksRetry;
 import saps.catalog.core.retry.catalog.GetTaskById;
@@ -51,7 +55,7 @@ public class CatalogUtils {
         LOGGER.error("Failed while " + message, e);
       }
 
-      try {
+      try { 
         LOGGER.info("Sleeping for " + sleepInSeconds + " seconds");
         Thread.sleep(Long.valueOf(sleepInSeconds) * 1000);
       } catch (InterruptedException e) {
@@ -181,7 +185,12 @@ public class CatalogUtils {
       String digestPreprocessing,
       String processingPhaseTag,
       String digestProcessing,
-      String message) {
+      String message) {  
+      
+    //how to deal with date value, java date, sql date or string ?    
+    //Collection <SapsLandsatImage> newColl = (validateLandsatImage(imageStore, region, date, dataset, message))
+    //if newColl.length > 0: then continue, else return (?)
+
     return retry(
         new AddNewTask(
             imageStore,
@@ -199,7 +208,22 @@ public class CatalogUtils {
             digestProcessing),
         CATALOG_DEFAULT_SLEEP_SECONDS,
         message);
-  }
+      }
+
+  /** 
+   * This function checks if we got a valid image
+   * 
+   * @param region region specified by the user submission
+   * @param date date specified by the user submission
+   * @param landsat landsat who (perhaps) got the image
+   * @param message 
+   * @return boolean indicating if the image does exist or not
+   * 
+   */
+    private static List<SapsImage> validateLandsatImage(Catalog imageStore, String region, Timestamp date, String landsat, String message) {
+      // SQL QUERY, if we got the image return TRUE, else return FALSE
+      return retry(new GetLandsatImages(imageStore, region, date, landsat), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+    }     
 
   /**
    * This function gets a specific task with id.
