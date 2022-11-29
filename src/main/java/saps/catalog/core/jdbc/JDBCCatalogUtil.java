@@ -5,8 +5,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
 import saps.catalog.core.jdbc.exceptions.JDBCCatalogException;
 import saps.common.core.model.SapsImage;
+import saps.common.core.model.SapsLandsatImage;
 import saps.common.core.model.SapsUser;
 import saps.common.core.model.enums.ImageTaskState;
 
@@ -62,5 +64,21 @@ public class JDBCCatalogUtil {
       }
     }
     return imageTasks;
+  }
+
+  public static List<SapsLandsatImage> extractSapsImages(ResultSet rs) throws JDBCCatalogException {
+    List<SapsLandsatImage> validImages = new ArrayList<>();
+    while(true) {
+      try {
+        if (!rs.next()) break;
+        validImages.add(
+          new SapsLandsatImage(
+          rs.getString(JDBCCatalogConstants.Tables.LandsatImages.PRODUCT_ID),
+          rs.getDate(JDBCCatalogConstants.Tables.LandsatImages.DATE),
+          rs.getString(JDBCCatalogConstants.Tables.LandsatImages.DATASET)));
+      } catch (SQLException e) {
+        throw new JDBCCatalogException("Error while extract landsat images", e);
+      }
+    } return validImages;
   }
 }

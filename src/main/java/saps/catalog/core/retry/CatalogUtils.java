@@ -3,13 +3,16 @@ package saps.catalog.core.retry;
 
 import java.util.Date;
 import java.util.List;
+
 import org.apache.log4j.Logger;
+
 import saps.catalog.core.Catalog;
 import saps.catalog.core.retry.catalog.AddNewTask;
 import saps.catalog.core.retry.catalog.AddNewUser;
 import saps.catalog.core.retry.catalog.AddTimestampRetry;
 import saps.catalog.core.retry.catalog.CatalogRetry;
 import saps.catalog.core.retry.catalog.GetAllTasks;
+import saps.catalog.core.retry.catalog.GetLandsatImages;
 import saps.catalog.core.retry.catalog.GetProcessedTasks;
 import saps.catalog.core.retry.catalog.GetProcessingTasksRetry;
 import saps.catalog.core.retry.catalog.GetTaskById;
@@ -18,6 +21,7 @@ import saps.catalog.core.retry.catalog.GetUser;
 import saps.catalog.core.retry.catalog.UpdateTaskRetry;
 import saps.catalog.core.retry.catalog.exceptions.CatalogRetryException;
 import saps.common.core.model.SapsImage;
+import saps.common.core.model.SapsLandsatImage;
 import saps.common.core.model.SapsUser;
 import saps.common.core.model.enums.ImageTaskState;
 
@@ -51,7 +55,7 @@ public class CatalogUtils {
         LOGGER.error("Failed while " + message, e);
       }
 
-      try {
+      try { 
         LOGGER.info("Sleeping for " + sleepInSeconds + " seconds");
         Thread.sleep(Long.valueOf(sleepInSeconds) * 1000);
       } catch (InterruptedException e) {
@@ -181,9 +185,18 @@ public class CatalogUtils {
       String digestPreprocessing,
       String processingPhaseTag,
       String digestProcessing,
-      String message) {
-    return retry(
-        new AddNewTask(
+      String message) {  
+      
+    //how to deal with date value, java date, sql date or string ?    
+    //Collection <SapsLandsatImage> newColl = (validateLandsatImage(imageStore, region, date, dataset, message))
+    //if newColl.length > 0: then continue, else return (?)
+
+    List<SapsLandsatImage> landsatImagesList = validateLandsatImage(imageStore, region, date, message);
+    if (landsatImagesList.size() > 0) {
+      LOGGER.debug("Landsat image has been found");
+
+      return retry(
+          new AddNewTask(
             imageStore,
             taskId,
             dataset,
@@ -197,9 +210,28 @@ public class CatalogUtils {
             digestPreprocessing,
             processingPhaseTag,
             digestProcessing),
-        CATALOG_DEFAULT_SLEEP_SECONDS,
-        message);
-  }
+            CATALOG_DEFAULT_SLEEP_SECONDS,
+            message);
+      }
+
+      LOGGER.debug("Landsat image has NOT been found");
+      return null;
+    }
+
+  /** 
+   * This function checks if we got a valid image
+   * 
+   * @param region region specified by the user submission
+   * @param date date specified by the user submission
+   * @param landsat landsat who (perhaps) got the image
+   * @param message 
+   * @return boolean indicating if the image does exist or not
+   * 
+   */
+    private static List<SapsLandsatImage> validateLandsatImage(Catalog imageStore, String region, Date date, String message) {
+      // SQL QUERY, if we got the image return TRUE, else return FALSE
+      return retry(new GetLandsatImages(imageStore, region, date), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+    }     
 
   /**
    * This function gets a specific task with id.

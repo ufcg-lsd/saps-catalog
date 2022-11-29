@@ -9,6 +9,7 @@ import saps.catalog.core.exceptions.TaskNotFoundException;
 import saps.catalog.core.exceptions.UserNotFoundException;
 import saps.common.core.model.SapsImage;
 import saps.common.core.model.SapsUser;
+import saps.common.core.model.SapsLandsatImage;
 import saps.common.core.model.enums.ImageTaskState;
 
 public interface Catalog {
@@ -115,6 +116,8 @@ public interface Catalog {
    * @throws CatalogException
    */
   List<SapsImage> getAllTasks() throws CatalogException;
+
+  List<SapsLandsatImage> getLandsatImages(String region, Date date) throws CatalogException;
 
   List<SapsImage> getTasksByState(ImageTaskState... tasksStates) throws CatalogException;
 
