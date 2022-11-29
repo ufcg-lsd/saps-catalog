@@ -387,6 +387,8 @@ public class JDBCCatalog implements Catalog {
       return null;
     }
 
+    LOGGER.info("===== ENTROU NO GET LANDSAT JDB ");
+
     PreparedStatement statement = null;
     Connection connection = null;
 
