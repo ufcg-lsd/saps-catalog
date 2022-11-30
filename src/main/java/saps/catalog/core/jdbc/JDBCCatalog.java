@@ -395,11 +395,12 @@ public class JDBCCatalog implements Catalog {
 
       LOGGER.info("===== CONECTOU");
       statement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.LANDSAT_IMAGES);
-      statement.setString(1, region);
-      statement.setDate(2, (java.sql.Date) date);
+      statement.setString(1, "%" + region + "%");
+      statement.setString(2, date.toString());
       statement.setString(3, landsat);
       statement.setQueryTimeout(300);
       LOGGER.info("===== MONTOU A CONSULTA");
+      LOGGER.info(statement.toString());
 
       statement.execute();
       LOGGER.info("===== EXECUTOU A CONSULTA");

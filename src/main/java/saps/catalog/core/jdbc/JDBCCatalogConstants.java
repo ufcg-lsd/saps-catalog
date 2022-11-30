@@ -134,8 +134,15 @@ public class JDBCCatalogConstants {
     public final class Select {
       public static final String TASKS = "SELECT * FROM " + JDBCCatalogConstants.TablesName.TASKS;
 
-      public static final String LANDSAT_IMAGES = "SELECT * FROM " + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES
-      + " WHERE EXISTS (SELECT * FROM landsat_images AS li WHERE li.region LIKE %?% AND li.date_acquired = ? AND li.spacecraft_id = ? ";
+      public static final String LANDSAT_IMAGES = "SELECT * FROM "
+      + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES  
+      + " WHERE " 
+      + JDBCCatalogConstants.Tables.LandsatImages.REGION 
+      + " LIKE ? AND "
+      + JDBCCatalogConstants.Tables.LandsatImages.DATE  
+      + " = ? AND " 
+      + JDBCCatalogConstants.Tables.LandsatImages.DATASET 
+      + " = ? LIMIT 1";
 
       public static final String USER =
           "SELECT * FROM "
@@ -335,7 +342,7 @@ public class JDBCCatalogConstants {
   }
 
   
-  /* down the road it will create a new table, for landsat_images. but that's not necessary now
+  /*down the road it will create a new table, for landsat_images. but that's not necessary now
   public static final String LANDSAT_IMAGES = 
   "CREATE TABLE IF NOT EXISTS " 
   + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES 
