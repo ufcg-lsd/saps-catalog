@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -390,13 +392,16 @@ public class JDBCCatalog implements Catalog {
     PreparedStatement statement = null;
     Connection connection = null;
 
+    DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd ");
+    String strDate = dateFormat.format(date);
+
     try {
       connection = getConnection();
 
       LOGGER.info("===== CONECTOU");
       statement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.LANDSAT_IMAGES);
       statement.setString(1, "%" + region + "%");
-      statement.setString(2, date.toString());
+      statement.setString(2, strDate);
       statement.setString(3, landsat);
       statement.setQueryTimeout(300);
       LOGGER.info("===== MONTOU A CONSULTA");

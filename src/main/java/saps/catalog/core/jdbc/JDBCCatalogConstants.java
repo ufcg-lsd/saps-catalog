@@ -59,7 +59,7 @@ public class JDBCCatalogConstants {
     }
 
     public final class LandsatImages {
-      public static final String DATE = "sensing_time";
+      public static final String DATE = "date_acquired";
       public static final String REGION = "product_id";
       public static final String DATASET = "spacecraft_id";
     }
@@ -142,7 +142,7 @@ public class JDBCCatalogConstants {
       + JDBCCatalogConstants.Tables.LandsatImages.DATE  
       + " = ? AND " 
       + JDBCCatalogConstants.Tables.LandsatImages.DATASET 
-      + " = ? LIMIT 1";
+      + " = ? LIMIT 1;";
 
       public static final String USER =
           "SELECT * FROM "
