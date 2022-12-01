@@ -376,17 +376,17 @@ public class JDBCCatalog implements Catalog {
 
     if (region == null || region.isEmpty()) {
       LOGGER.error("Invalid region " + region);
-      return null;
+      throw new IllegalArgumentException("Region is missing");
     }
 
     if (date == null) {
       LOGGER.error("Invalid date " + date);
-      return null;
+      throw new NullPointerException("Invalid date (null)");
     }
 
     if (landsat == null || landsat.isEmpty()) {
       LOGGER.error("Invalid landsat " + landsat);
-      return null;
+      throw new IllegalArgumentException("Landsat is missing");
     }
 
     PreparedStatement statement = null;
