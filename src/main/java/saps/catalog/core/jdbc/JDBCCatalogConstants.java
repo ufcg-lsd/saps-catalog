@@ -142,7 +142,7 @@ public class JDBCCatalogConstants {
       + JDBCCatalogConstants.Tables.LandsatImages.DATE  
       + " = ? AND " 
       + JDBCCatalogConstants.Tables.LandsatImages.DATASET 
-      + " = ? LIMIT 1;";
+      + " = ? LIMIT 1";
 
       public static final String USER =
           "SELECT * FROM "

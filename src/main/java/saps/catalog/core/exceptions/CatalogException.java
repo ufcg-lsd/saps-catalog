@@ -8,4 +8,9 @@ public class CatalogException extends RuntimeException {
   public CatalogException(String msg) {
     super(msg);
   }
+
+  public CatalogException(String msg, Exception e) {
+    super(msg, e);
+  }
+
 }

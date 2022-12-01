@@ -392,33 +392,25 @@ public class JDBCCatalog implements Catalog {
     PreparedStatement statement = null;
     Connection connection = null;
 
-    DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd ");
-    String strDate = dateFormat.format(date);
-
     try {
       connection = getConnection();
-
-      LOGGER.info("===== CONECTOU");
       statement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.LANDSAT_IMAGES);
       statement.setString(1, "%" + region + "%");
-      statement.setString(2, strDate);
-      statement.setString(3, landsat);
+      statement.setDate(2, javaDateToSqlDate(date));
+      statement.setString(3, landsat.toUpperCase()); 
       statement.setQueryTimeout(300);
-      LOGGER.info("===== MONTOU A CONSULTA");
-      LOGGER.info(statement.toString());
 
+      LOGGER.info(statement.toString());
       statement.execute();
-      LOGGER.info("===== EXECUTOU A CONSULTA");
 
       ResultSet rs = statement.getResultSet();
       List<SapsLandsatImage> result = JDBCCatalogUtil.extractSapsImages(rs);
-      LOGGER.info("===== EXTRAIU");
       return result;
       
     } catch (SQLException e) {
-      throw new CatalogException("Erro while select landsat images");
+      throw new CatalogException("Erro while select landsat images", e);
     } catch (JDBCCatalogException e) {
-      throw new CatalogException("Error while getting landsat images");
+      throw new CatalogException("Error while getting landsat images", e);
     } finally {
       close(statement, connection);
     }
