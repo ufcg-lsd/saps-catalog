@@ -19,6 +19,7 @@ public class JDBCCatalogConstants {
     public static final String NOTIFY = "NOTIFY";
     public static final String DEPLOY_CONFIG = "DEPLOY_CONFIG";
     public static final String PROVENANCE_DATA = "PROVENANCE_DATA";
+    public static final String LANDSAT_IMAGES = "LANDSAT_IMAGES";
   }
 
   public final class Tables {
@@ -55,6 +56,12 @@ public class JDBCCatalogConstants {
           public static final String DIGEST = "processing_digest";
         }
       }
+    }
+
+    public final class LandsatImages {
+      public static final String DATE = "date_acquired";
+      public static final String REGION = "product_id";
+      public static final String DATASET = "spacecraft_id";
     }
 
     public final class User {
@@ -125,11 +132,22 @@ public class JDBCCatalogConstants {
     public final class Select {
       public static final String TASKS = "SELECT * FROM " + JDBCCatalogConstants.TablesName.TASKS;
 
-      public static final String USER = "SELECT * FROM "
-          + JDBCCatalogConstants.TablesName.USERS
-          + " WHERE "
-          + JDBCCatalogConstants.Tables.User.EMAIL
-          + " = ?";
+      public static final String LANDSAT_IMAGES = "SELECT * FROM "
+      + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES  
+      + " WHERE " 
+      + JDBCCatalogConstants.Tables.LandsatImages.REGION 
+      + " LIKE ? AND "
+      + JDBCCatalogConstants.Tables.LandsatImages.DATE  
+      + " = ? AND " 
+      + JDBCCatalogConstants.Tables.LandsatImages.DATASET 
+      + " = ? LIMIT 1";
+
+      public static final String USER =
+          "SELECT * FROM "
+              + JDBCCatalogConstants.TablesName.USERS
+              + " WHERE "
+              + JDBCCatalogConstants.Tables.User.EMAIL
+              + " = ?";
 
       public static final String TASKS_BY_STATE_ORDER_BY_PRIORITY_ASC = "SELECT * FROM "
           + JDBCCatalogConstants.TablesName.TASKS
@@ -334,4 +352,16 @@ public class JDBCCatalogConstants {
         + JDBCCatalogConstants.Tables.ProvenanceData.OUTPUT_KERNEL_VERSION
         + " VARCHAR(100) )";
   }
+
+  
+  /*down the road it will create a new table, for landsat_images. but that's not necessary now
+  public static final String LANDSAT_IMAGES = 
+  "CREATE TABLE IF NOT EXISTS " 
+  + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES 
+  + "("
+  + JDBCCatalogConstants.Tables.LandsatImages.REGION
+  + " VARCHAR(40), " 
+  + JDBCCatalogConstants.Tables.LandsatImages.DATE
+  */
+
 }

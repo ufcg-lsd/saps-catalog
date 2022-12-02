@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -18,6 +20,7 @@ import saps.catalog.core.exceptions.TaskNotFoundException;
 import saps.catalog.core.exceptions.UserNotFoundException;
 import saps.catalog.core.jdbc.exceptions.JDBCCatalogException;
 import saps.common.core.model.SapsImage;
+import saps.common.core.model.SapsLandsatImage;
 import saps.common.core.model.SapsUser;
 import saps.common.core.model.enums.ImageTaskState;
 import saps.common.utils.SapsPropertiesUtil;
@@ -363,6 +366,51 @@ public class JDBCCatalog implements Catalog {
       throw new CatalogException("Error while extract all tasks");
     } finally {
       close(statement, conn);
+    }
+  }
+
+  @Override 
+  public List<SapsLandsatImage> getLandsatImages(String region, Date date, String landsat) throws CatalogException {
+
+    if (region == null || region.isEmpty()) {
+      LOGGER.error("Invalid region " + region);
+      throw new IllegalArgumentException("Region is missing");
+    }
+
+    if (date == null) {
+      LOGGER.error("Invalid date " + date);
+      throw new NullPointerException("Invalid date (null)");
+    }
+
+    if (landsat == null || landsat.isEmpty()) {
+      LOGGER.error("Invalid landsat " + landsat);
+      throw new IllegalArgumentException("Landsat is missing");
+    }
+
+    PreparedStatement statement = null;
+    Connection connection = null;
+
+    try {
+      connection = getConnection();
+      statement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.LANDSAT_IMAGES);
+      statement.setString(1, "%" + region + "%");
+      statement.setDate(2, javaDateToSqlDate(date));
+      statement.setString(3, landsat.toUpperCase()); 
+      statement.setQueryTimeout(300);
+
+      LOGGER.info(statement.toString());
+      statement.execute();
+
+      ResultSet rs = statement.getResultSet();
+      List<SapsLandsatImage> result = JDBCCatalogUtil.extractSapsImages(rs);
+      return result;
+      
+    } catch (SQLException e) {
+      throw new CatalogException("Erro while select landsat images", e);
+    } catch (JDBCCatalogException e) {
+      throw new CatalogException("Error while getting landsat images", e);
+    } finally {
+      close(statement, connection);
     }
   }
 
