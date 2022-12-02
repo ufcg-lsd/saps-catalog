@@ -13,18 +13,22 @@ public class GetTasksCompletedWithPagination implements CatalogRetry<List<SapsIm
   private Integer size;
   private String sortField;
   private String sortOrder;
+  private String search;
 
-  public GetTasksCompletedWithPagination(Catalog imageStore, Integer page, Integer size, String sortField, String sortOrder) {
+  public GetTasksCompletedWithPagination(Catalog imageStore, String search, Integer page, Integer size,
+      String sortField, String sortOrder) {
     this.imageStore = imageStore;
     this.page = page;
     this.size = size;
-    this.sortField = sortField; 
+    this.search = search;
+    this.sortField = sortField;
     this.sortOrder = sortOrder;
   }
 
+
   @Override
   public List<SapsImage> run() {
-    return imageStore.getTasksCompletedWithPagination(page, size, sortField, sortOrder);
+    return imageStore.getTasksCompletedWithPagination(search, page, size, sortField, sortOrder);
   }
 }
 
