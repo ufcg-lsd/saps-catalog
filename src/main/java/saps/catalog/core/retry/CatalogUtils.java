@@ -265,22 +265,58 @@ public class CatalogUtils {
     return retry(new GetAllTasks(imageStore), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 
+  /**
+   * This function return all the tasks that have not finished all the pipeline.
+   * @param imageStore  catalog component
+   * @param search      search query
+   * @param page        pagination page number
+   * @param size        pagination page size
+   * @param sortField   sort field
+   * @param sortOrder   type of sort order
+   * @param message     information message
+   * @return SAPS image list
+   */
   public static List<SapsImage> getTasksOngoingWithPagination(Catalog imageStore, String search, Integer page,
       Integer size, String sortField, String sortOrder, String message) {
     return retry(new GetTasksOngoingWithPagination(imageStore, search, page, size, sortField, sortOrder),
         CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 
+  /**
+   * This function return all the tasks that have finished all the pipeline.
+   * @param imageStore  catalog component
+   * @param search      search query
+   * @param page        pagination page number
+   * @param size        pagination page size
+   * @param sortField   sort field
+   * @param sortOrder   type of sort order
+   * @param message     information message
+   * @return SAPS image list
+   */
   public static List<SapsImage> getTasksCompletedWithPagination(Catalog imageStore, String search, Integer page,
       Integer size, String sortField, String sortOrder, String message) {
     return retry(new GetTasksCompletedWithPagination(imageStore, search, page, size, sortField, sortOrder),
         CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 
+  /**
+   * This function return the amount of tasks that have not finished all the pipeline.
+   * @param imageStore  catalog component
+   * @param search      search query
+   * @param message     information message
+   * @return SAPS image list
+   */
   public static Integer getCountOngoingTasks(Catalog imageStore, String search, String message) {
     return retry(new GetCountOngoingTasks(imageStore, search), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 
+  /**
+   * This function return the amount of tasks that have finished all the pipeline.
+   * @param imageStore  catalog component
+   * @param search      search query
+   * @param message     information message
+   * @return SAPS image list
+   */
   public static Integer getCountCompletedTasks(Catalog imageStore, String search, String message) {
     return retry(new GetCountCompletedTasks(imageStore, search), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
