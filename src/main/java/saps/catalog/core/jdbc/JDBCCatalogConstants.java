@@ -99,36 +99,34 @@ public class JDBCCatalogConstants {
   public final class Queries {
 
     public final class Insert {
-      public static final String TASK =
-          "INSERT INTO "
-              + JDBCCatalogConstants.TablesName.TASKS
-              + " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      public static final String TASK = "INSERT INTO "
+          + JDBCCatalogConstants.TablesName.TASKS
+          + " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-      public static final String TIMESTAMP =
-          "INSERT INTO " + JDBCCatalogConstants.TablesName.TIMESTAMPS + " VALUES(?, ?, now())";
+      public static final String TIMESTAMP = "INSERT INTO " + JDBCCatalogConstants.TablesName.TIMESTAMPS
+          + " VALUES(?, ?, now())";
 
-      public static final String USER =
-          "INSERT INTO " + JDBCCatalogConstants.TablesName.USERS + " VALUES(?, ?, ?, ?, ?, ?)";
+      public static final String USER = "INSERT INTO " + JDBCCatalogConstants.TablesName.USERS
+          + " VALUES(?, ?, ?, ?, ?, ?)";
     }
 
     public final class Update {
-      public static final String TASK =
-          "UPDATE "
-              + JDBCCatalogConstants.TablesName.TASKS
-              + " SET "
-              + JDBCCatalogConstants.Tables.Task.STATE
-              + " = ?, "
-              + JDBCCatalogConstants.Tables.Task.UPDATED_TIME
-              + " = now(), "
-              + JDBCCatalogConstants.Tables.Task.STATUS
-              + " = ?, "
-              + JDBCCatalogConstants.Tables.Task.ERROR_MSG
-              + " = ?, "
-              + JDBCCatalogConstants.Tables.Task.ARREBOL_JOB_ID
-              + " = ? "
-              + "WHERE "
-              + JDBCCatalogConstants.Tables.Task.ID
-              + " = ?";
+      public static final String TASK = "UPDATE "
+          + JDBCCatalogConstants.TablesName.TASKS
+          + " SET "
+          + JDBCCatalogConstants.Tables.Task.STATE
+          + " = ?, "
+          + JDBCCatalogConstants.Tables.Task.UPDATED_TIME
+          + " = now(), "
+          + JDBCCatalogConstants.Tables.Task.STATUS
+          + " = ?, "
+          + JDBCCatalogConstants.Tables.Task.ERROR_MSG
+          + " = ?, "
+          + JDBCCatalogConstants.Tables.Task.ARREBOL_JOB_ID
+          + " = ? "
+          + "WHERE "
+          + JDBCCatalogConstants.Tables.Task.ID
+          + " = ?";
     }
 
     public final class Select {
@@ -140,176 +138,190 @@ public class JDBCCatalogConstants {
       + JDBCCatalogConstants.Tables.LandsatImages.PRODUCT_ID 
       + " = ? LIMIT 1";
 
-      public static final String USER =
-          "SELECT * FROM "
+      public static final String USER = "SELECT * FROM "
               + JDBCCatalogConstants.TablesName.USERS
               + " WHERE "
               + JDBCCatalogConstants.Tables.User.EMAIL
               + " = ?";
 
-      public static final String TASKS_BY_STATE_ORDER_BY_PRIORITY_ASC =
-          "SELECT * FROM "
-              + JDBCCatalogConstants.TablesName.TASKS
-              + " WHERE "
-              + Tables.Task.STATE
-              + " = ? ORDER BY "
-              + JDBCCatalogConstants.Tables.Task.PRIORITY
-              + " ASC";
+      public static final String TASKS_BY_STATE_ORDER_BY_PRIORITY_ASC = "SELECT * FROM "
+          + JDBCCatalogConstants.TablesName.TASKS
+          + " WHERE "
+          + Tables.Task.STATE
+          + " = ? ORDER BY "
+          + JDBCCatalogConstants.Tables.Task.PRIORITY
+          + " ASC";
 
-      public static final String TASK =
-          "SELECT * FROM "
-              + JDBCCatalogConstants.TablesName.TASKS
-              + " WHERE "
-              + JDBCCatalogConstants.Tables.Task.ID
-              + " = ?";
+      public static final String TASK = "SELECT * FROM "
+          + JDBCCatalogConstants.TablesName.TASKS
+          + " WHERE "
+          + JDBCCatalogConstants.Tables.Task.ID
+          + " = ?";
 
-      public static final String FILTER_TASKS =
-          "SELECT * FROM "
-              + JDBCCatalogConstants.TablesName.TASKS
-              + " WHERE "
-              + JDBCCatalogConstants.Tables.Task.STATE
-              + " = ? AND "
-              + JDBCCatalogConstants.Tables.Task.Image.REGION
-              + " = ? AND "
-              + JDBCCatalogConstants.Tables.Task.Image.DATE
-              + " BETWEEN ? AND ? AND "
-              + JDBCCatalogConstants.Tables.Task.Algorithms.Preprocessing.TAG
-              + " = ? AND "
-              + JDBCCatalogConstants.Tables.Task.Algorithms.Inputdownloading.TAG
-              + " = ? AND "
-              + JDBCCatalogConstants.Tables.Task.Algorithms.Processing.TAG
-              + " = ?";
+      public static final String FILTER_TASKS = "SELECT * FROM "
+          + JDBCCatalogConstants.TablesName.TASKS
+          + " WHERE "
+          + JDBCCatalogConstants.Tables.Task.STATE
+          + " = ? AND "
+          + JDBCCatalogConstants.Tables.Task.Image.REGION
+          + " = ? AND "
+          + JDBCCatalogConstants.Tables.Task.Image.DATE
+          + " BETWEEN ? AND ? AND "
+          + JDBCCatalogConstants.Tables.Task.Algorithms.Preprocessing.TAG
+          + " = ? AND "
+          + JDBCCatalogConstants.Tables.Task.Algorithms.Inputdownloading.TAG
+          + " = ? AND "
+          + JDBCCatalogConstants.Tables.Task.Algorithms.Processing.TAG
+          + " = ?";
+
+      public static final String FILTER_TASKS_BY_DATE = "SELECT * FROM "
+          + JDBCCatalogConstants.TablesName.TASKS
+          + " WHERE "
+          + " to_char("
+          + JDBCCatalogConstants.Tables.Task.Image.DATE
+          + " , 'YYYY-MM-DD') "
+          + " LIKE ?";
+
+      public static final String TASKS_ONGOING_COUNT = "SELECT COUNT(*) FROM "
+          + JDBCCatalogConstants.TablesName.TASKS
+          + " WHERE ("
+          + Tables.Task.STATE
+          + " <> 'archived' AND "
+          + Tables.Task.STATE
+          + " <> 'failed')";
+
+      public static final String TASKS_COMPLETED_COUNT = "SELECT COUNT(*) FROM "
+          + JDBCCatalogConstants.TablesName.TASKS
+          + " WHERE ("
+          + Tables.Task.STATE
+          + " = 'archived' OR "
+          + Tables.Task.STATE
+          + " = 'failed')";
     }
 
     public final class Delete {
-      public static final String TIMESTAMP =
-          "DELETE FROM "
-              + JDBCCatalogConstants.TablesName.TIMESTAMPS
-              + " WHERE "
-              + JDBCCatalogConstants.Tables.Task.ID
-              + " = ? AND "
-              + JDBCCatalogConstants.Tables.Task.STATE
-              + " = ? AND "
-              + JDBCCatalogConstants.Tables.Task.UPDATED_TIME
-              + " = ?";
+      public static final String TIMESTAMP = "DELETE FROM "
+          + JDBCCatalogConstants.TablesName.TIMESTAMPS
+          + " WHERE "
+          + JDBCCatalogConstants.Tables.Task.ID
+          + " = ? AND "
+          + JDBCCatalogConstants.Tables.Task.STATE
+          + " = ? AND "
+          + JDBCCatalogConstants.Tables.Task.UPDATED_TIME
+          + " = ?";
     }
   }
 
   public final class CreateTable {
-    public static final String USERS =
-        "CREATE TABLE IF NOT EXISTS "
-            + JDBCCatalogConstants.TablesName.USERS
-            + "("
-            + JDBCCatalogConstants.Tables.User.EMAIL
-            + " VARCHAR(255) PRIMARY KEY, "
-            + JDBCCatalogConstants.Tables.User.NAME
-            + " VARCHAR(255), "
-            + JDBCCatalogConstants.Tables.User.PASSWORD
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.User.ENABLE
-            + " BOOLEAN, "
-            + JDBCCatalogConstants.Tables.User.NOTIFY
-            + " BOOLEAN, "
-            + JDBCCatalogConstants.Tables.User.ADMIN_ROLE
-            + " BOOLEAN )";
+    public static final String USERS = "CREATE TABLE IF NOT EXISTS "
+        + JDBCCatalogConstants.TablesName.USERS
+        + "("
+        + JDBCCatalogConstants.Tables.User.EMAIL
+        + " VARCHAR(255) PRIMARY KEY, "
+        + JDBCCatalogConstants.Tables.User.NAME
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.User.PASSWORD
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.User.ENABLE
+        + " BOOLEAN, "
+        + JDBCCatalogConstants.Tables.User.NOTIFY
+        + " BOOLEAN, "
+        + JDBCCatalogConstants.Tables.User.ADMIN_ROLE
+        + " BOOLEAN )";
 
-    public static final String TASKS =
-        "CREATE TABLE IF NOT EXISTS "
-            + JDBCCatalogConstants.TablesName.TASKS
-            + "("
-            + JDBCCatalogConstants.Tables.Task.ID
-            + " VARCHAR(255) PRIMARY KEY, "
-            + JDBCCatalogConstants.Tables.Task.Image.DATASET
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.Task.Image.REGION
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.Task.Image.DATE
-            + " DATE, "
-            + JDBCCatalogConstants.Tables.Task.STATE
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.Task.ARREBOL_JOB_ID
-            + " VARCHAR(100),"
-            + JDBCCatalogConstants.Tables.Task.FEDERATION_MEMBER
-            + " VARCHAR(255), "
-            + JDBCCatalogConstants.Tables.Task.PRIORITY
-            + " INTEGER, "
-            + JDBCCatalogConstants.Tables.User.EMAIL
-            + " VARCHAR(255) REFERENCES "
-            + JDBCCatalogConstants.TablesName.USERS
-            + "("
-            + JDBCCatalogConstants.Tables.User.EMAIL
-            + "), "
-            + JDBCCatalogConstants.Tables.Task.Algorithms.Inputdownloading.TAG
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.Task.Algorithms.Inputdownloading.DIGEST
-            + " VARCHAR(255), "
-            + JDBCCatalogConstants.Tables.Task.Algorithms.Preprocessing.TAG
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.Task.Algorithms.Preprocessing.DIGEST
-            + " VARCHAR(255), "
-            + JDBCCatalogConstants.Tables.Task.Algorithms.Processing.TAG
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.Task.Algorithms.Processing.DIGEST
-            + " VARCHAR(255), "
-            + JDBCCatalogConstants.Tables.Task.CREATION_TIME
-            + " TIMESTAMP, "
-            + JDBCCatalogConstants.Tables.Task.UPDATED_TIME
-            + " TIMESTAMP, "
-            + JDBCCatalogConstants.Tables.Task.STATUS
-            + " VARCHAR(255), "
-            + JDBCCatalogConstants.Tables.Task.ERROR_MSG
-            + " VARCHAR(255) )";
+    public static final String TASKS = "CREATE TABLE IF NOT EXISTS "
+        + JDBCCatalogConstants.TablesName.TASKS
+        + "("
+        + JDBCCatalogConstants.Tables.Task.ID
+        + " VARCHAR(255) PRIMARY KEY, "
+        + JDBCCatalogConstants.Tables.Task.Image.DATASET
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.Task.Image.REGION
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.Task.Image.DATE
+        + " DATE, "
+        + JDBCCatalogConstants.Tables.Task.STATE
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.Task.ARREBOL_JOB_ID
+        + " VARCHAR(100),"
+        + JDBCCatalogConstants.Tables.Task.FEDERATION_MEMBER
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.Task.PRIORITY
+        + " INTEGER, "
+        + JDBCCatalogConstants.Tables.User.EMAIL
+        + " VARCHAR(255) REFERENCES "
+        + JDBCCatalogConstants.TablesName.USERS
+        + "("
+        + JDBCCatalogConstants.Tables.User.EMAIL
+        + "), "
+        + JDBCCatalogConstants.Tables.Task.Algorithms.Inputdownloading.TAG
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.Task.Algorithms.Inputdownloading.DIGEST
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.Task.Algorithms.Preprocessing.TAG
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.Task.Algorithms.Preprocessing.DIGEST
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.Task.Algorithms.Processing.TAG
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.Task.Algorithms.Processing.DIGEST
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.Task.CREATION_TIME
+        + " TIMESTAMP, "
+        + JDBCCatalogConstants.Tables.Task.UPDATED_TIME
+        + " TIMESTAMP, "
+        + JDBCCatalogConstants.Tables.Task.STATUS
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.Task.ERROR_MSG
+        + " VARCHAR(255) )";
 
-    public static final String TIMESTAMPS =
-        "CREATE TABLE IF NOT EXISTS "
-            + JDBCCatalogConstants.TablesName.TIMESTAMPS
-            + "("
-            + JDBCCatalogConstants.Tables.Task.ID
-            + " VARCHAR(255), "
-            + JDBCCatalogConstants.Tables.Task.STATE
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.Task.UPDATED_TIME
-            + " TIMESTAMP )";
+    public static final String TIMESTAMPS = "CREATE TABLE IF NOT EXISTS "
+        + JDBCCatalogConstants.TablesName.TIMESTAMPS
+        + "("
+        + JDBCCatalogConstants.Tables.Task.ID
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.Task.STATE
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.Task.UPDATED_TIME
+        + " TIMESTAMP )";
 
-    public static final String NOTIFY =
-        "CREATE TABLE IF NOT EXISTS "
-            + JDBCCatalogConstants.TablesName.NOTIFY
-            + "("
-            + JDBCCatalogConstants.Tables.Notify.SUBMISSION_ID
-            + " VARCHAR(255), "
-            + JDBCCatalogConstants.Tables.Task.ID
-            + " VARCHAR(255), "
-            + JDBCCatalogConstants.Tables.User.EMAIL
-            + " VARCHAR(255), "
-            + " PRIMARY KEY("
-            + JDBCCatalogConstants.Tables.Notify.SUBMISSION_ID
-            + ", "
-            + JDBCCatalogConstants.Tables.Task.ID
-            + ", "
-            + JDBCCatalogConstants.Tables.User.EMAIL
-            + ") )";
+    public static final String NOTIFY = "CREATE TABLE IF NOT EXISTS "
+        + JDBCCatalogConstants.TablesName.NOTIFY
+        + "("
+        + JDBCCatalogConstants.Tables.Notify.SUBMISSION_ID
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.Task.ID
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.User.EMAIL
+        + " VARCHAR(255), "
+        + " PRIMARY KEY("
+        + JDBCCatalogConstants.Tables.Notify.SUBMISSION_ID
+        + ", "
+        + JDBCCatalogConstants.Tables.Task.ID
+        + ", "
+        + JDBCCatalogConstants.Tables.User.EMAIL
+        + ") )";
 
-    public static final String DEPLOY_CONFIG =
-        "CREATE TABLE IF NOT EXISTS "
-            + JDBCCatalogConstants.TablesName.DEPLOY_CONFIG
-            + "("
-            + JDBCCatalogConstants.Tables.DeployConfig.NFS_SERVER_IP
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.DeployConfig.NFS_SERVER_SSH_PORT
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.DeployConfig.NFS_SERVER_PORT
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.Task.FEDERATION_MEMBER
-            + " VARCHAR(255), "
-            + " PRIMARY KEY("
-            + JDBCCatalogConstants.Tables.DeployConfig.NFS_SERVER_IP
-            + ", "
-            + JDBCCatalogConstants.Tables.DeployConfig.NFS_SERVER_SSH_PORT
-            + ", "
-            + JDBCCatalogConstants.Tables.DeployConfig.NFS_SERVER_PORT
-            + ", "
-            + JDBCCatalogConstants.Tables.Task.FEDERATION_MEMBER
-            + ") )";
+    public static final String DEPLOY_CONFIG = "CREATE TABLE IF NOT EXISTS "
+        + JDBCCatalogConstants.TablesName.DEPLOY_CONFIG
+        + "("
+        + JDBCCatalogConstants.Tables.DeployConfig.NFS_SERVER_IP
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.DeployConfig.NFS_SERVER_SSH_PORT
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.DeployConfig.NFS_SERVER_PORT
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.Task.FEDERATION_MEMBER
+        + " VARCHAR(255), "
+        + " PRIMARY KEY("
+        + JDBCCatalogConstants.Tables.DeployConfig.NFS_SERVER_IP
+        + ", "
+        + JDBCCatalogConstants.Tables.DeployConfig.NFS_SERVER_SSH_PORT
+        + ", "
+        + JDBCCatalogConstants.Tables.DeployConfig.NFS_SERVER_PORT
+        + ", "
+        + JDBCCatalogConstants.Tables.Task.FEDERATION_MEMBER
+        + ") )";
 
     public static final String PROVENANCE_DATA =
         "CREATE TABLE IF NOT EXISTS "
@@ -336,8 +348,7 @@ public class JDBCCatalogConstants {
             + JDBCCatalogConstants.Tables.ProvenanceData.OUTPUT_KERNEL_VERSION
             + " VARCHAR(100) )";
 
-    public static final String LANDSAT_IMAGES =
-	"CREATE TABLE IF NOT EXISTS "
+    public static final String LANDSAT_IMAGES = 	"CREATE TABLE IF NOT EXISTS "
 	    + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES
 	    + " ( "
 	    + JDBCCatalogConstants.Tables.LandsatImages.PRODUCT_ID
