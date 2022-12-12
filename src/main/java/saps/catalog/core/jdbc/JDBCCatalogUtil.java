@@ -73,7 +73,7 @@ public class JDBCCatalogUtil {
         if (!rs.next()) break;
         validImages.add(
           new SapsLandsatImage(
-          rs.getString(JDBCCatalogConstants.Tables.LandsatImages.REGION),
+          rs.getString(JDBCCatalogConstants.Tables.LandsatImages.PRODUCT_ID),
           rs.getDate(JDBCCatalogConstants.Tables.LandsatImages.DATE),
           rs.getString(JDBCCatalogConstants.Tables.LandsatImages.DATASET)));
       } catch (SQLException e) {

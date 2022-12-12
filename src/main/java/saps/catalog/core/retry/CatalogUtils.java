@@ -192,7 +192,7 @@ public class CatalogUtils {
     //if newColl.length > 0: then continue, else return (?)
 
     LOGGER.info("===== ENTROU NO ADD NEW TASK");
-    List<SapsLandsatImage> landsatImagesList = validateLandsatImage(imageStore, region, date, dataset, message);
+    List<SapsLandsatImage> landsatImagesList = validateLandsatImage(imageStore, region, date, message);
     if (landsatImagesList.size() > 0) {
       LOGGER.info("image has been found");
 
@@ -229,9 +229,9 @@ public class CatalogUtils {
    * @return boolean indicating if the image does exist or not
    * 
    */
-    private static List<SapsLandsatImage> validateLandsatImage(Catalog imageStore, String region, Date date, String landsat, String message) {
+    private static List<SapsLandsatImage> validateLandsatImage(Catalog imageStore, String region, Date date, String message) {
       // SQL QUERY, if we got the image return TRUE, else return FALSE
-      return retry(new GetLandsatImages(imageStore, region, date, landsat), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+      return retry(new GetLandsatImages(imageStore, region, date), CATALOG_DEFAULT_SLEEP_SECONDS, message);
     }     
 
   /**

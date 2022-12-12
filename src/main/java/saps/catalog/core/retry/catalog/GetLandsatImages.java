@@ -13,19 +13,17 @@ public class GetLandsatImages implements CatalogRetry<List<SapsLandsatImage>> {
     private Catalog imageStore;
     private String region;
     private Date date;
-    private String landsat;
 
-    public GetLandsatImages(Catalog imageStore, String region, Date date, String landsat) {
+    public GetLandsatImages(Catalog imageStore, String region, Date date) {
         this.imageStore = imageStore;
         this.region = region;
         this.date = date;
-        this.landsat = landsat;
     }
 
     @Override
     public List<SapsLandsatImage> run() {
-	List<SapsLandsatImage> X = imageStore.getLandsatImages(region, date, landsat);
-	LOGGER.info(X);
-        return imageStore.getLandsatImages(region, date, landsat);
+	List<SapsLandsatImage> X = imageStore.getLandsatImages(region, date);
+	//LOGGER.info(X);
+        return imageStore.getLandsatImages(region, date);
     }
 }

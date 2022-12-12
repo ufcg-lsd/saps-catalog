@@ -372,7 +372,7 @@ public class JDBCCatalog implements Catalog {
   }
 
   @Override 
-  public List<SapsLandsatImage> getLandsatImages(String region, Date date, String landsat) throws CatalogException {
+  public List<SapsLandsatImage> getLandsatImages(String region, Date date) throws CatalogException {
 
     if (region == null || region.isEmpty()) {
       LOGGER.error("Invalid region " + region);
@@ -384,20 +384,19 @@ public class JDBCCatalog implements Catalog {
       throw new NullPointerException("Invalid date (null)");
     }
 
-    if (landsat == null || landsat.isEmpty()) {
-      LOGGER.error("Invalid landsat " + landsat);
-      throw new IllegalArgumentException("Landsat is missing");
-    }
-
     PreparedStatement statement = null;
     Connection connection = null;
+
+    java.sql.Date sqlDate = javaDateToSqlDate(date);
+    String strDate =  sqlDate.toString();
+    String regionAndDate = region + strDate.replace("-", "");
+
+    long regionAsLong = Long.parseLong(regionAndDate);
 
     try {
       connection = getConnection();
       statement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.LANDSAT_IMAGES);
-      statement.setString(1, "%" + region + "%");
-      statement.setDate(2, javaDateToSqlDate(date));
-      statement.setString(3, landsat.toUpperCase()); 
+      statement.setLong(1, regionAsLong);
       statement.setQueryTimeout(300);
 
       LOGGER.info(statement.toString());
@@ -405,8 +404,9 @@ public class JDBCCatalog implements Catalog {
 
       ResultSet rs = statement.getResultSet();
       List<SapsLandsatImage> result = JDBCCatalogUtil.extractSapsImages(rs);
+      rs.close();
       return result;
-      
+   
     } catch (SQLException e) {
       throw new CatalogException("Erro while select landsat images", e);
     } catch (JDBCCatalogException e) {
