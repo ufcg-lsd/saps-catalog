@@ -81,6 +81,7 @@ public class JDBCCatalog implements Catalog {
       statement.execute(JDBCCatalogConstants.CreateTable.NOTIFY);
       statement.execute(JDBCCatalogConstants.CreateTable.DEPLOY_CONFIG);
       statement.execute(JDBCCatalogConstants.CreateTable.PROVENANCE_DATA);
+      statement.execute(JDBCCatalogConstants.CreateTable.LANDSAT_IMAGES);
 
       statement.close();
     } catch (SQLException e) {
@@ -399,7 +400,6 @@ public class JDBCCatalog implements Catalog {
       statement.setLong(1, regionAsLong);
       statement.setQueryTimeout(300);
 
-      LOGGER.info(statement.toString());
       statement.execute();
 
       ResultSet rs = statement.getResultSet();

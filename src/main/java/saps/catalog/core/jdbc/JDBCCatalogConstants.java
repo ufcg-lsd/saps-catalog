@@ -60,7 +60,7 @@ public class JDBCCatalogConstants {
 
     public final class LandsatImages {
       public static final String DATE = "date_acquired";
-      public static final String PRODUCT_ID = "product_id";
+      public static final String PRODUCT_ID = "landsat_key";
       public static final String DATASET = "spacecraft_id";
     }
 
@@ -335,17 +335,13 @@ public class JDBCCatalogConstants {
             + " VARCHAR(100), "
             + JDBCCatalogConstants.Tables.ProvenanceData.OUTPUT_KERNEL_VERSION
             + " VARCHAR(100) )";
-  }
 
-  
-  /*down the road it will create a new table, for landsat_images. but that's not necessary now
-  public static final String LANDSAT_IMAGES = 
-  "CREATE TABLE IF NOT EXISTS " 
-  + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES 
-  + "("
-  + JDBCCatalogConstants.Tables.LandsatImages.REGION
-  + " VARCHAR(40), " 
-  + JDBCCatalogConstants.Tables.LandsatImages.DATE
-  */
+    public static final String LANDSAT_IMAGES =
+	"CREATE TABLE IF NOT EXISTS "
+	    + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES
+	    + " ( "
+	    + JDBCCatalogConstants.Tables.LandsatImages.PRODUCT_ID
+	    + " BIGINT PRIMARY KEY ) ";
+  }
 
 }

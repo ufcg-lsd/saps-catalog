@@ -191,10 +191,9 @@ public class CatalogUtils {
     //Collection <SapsLandsatImage> newColl = (validateLandsatImage(imageStore, region, date, dataset, message))
     //if newColl.length > 0: then continue, else return (?)
 
-    LOGGER.info("===== ENTROU NO ADD NEW TASK");
     List<SapsLandsatImage> landsatImagesList = validateLandsatImage(imageStore, region, date, message);
     if (landsatImagesList.size() > 0) {
-      LOGGER.info("image has been found");
+      LOGGER.debug("Landsat image has been found");
 
       return retry(
           new AddNewTask(
@@ -215,7 +214,7 @@ public class CatalogUtils {
             message);
       }
 
-      LOGGER.info("image has NOT been found");
+      LOGGER.debug("Landsat image has NOT been found");
       return null;
     }
 
