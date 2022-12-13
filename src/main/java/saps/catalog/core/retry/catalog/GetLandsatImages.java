@@ -1,12 +1,11 @@
 package saps.catalog.core.retry.catalog;
 
-import java.util.List;
 import java.util.Date;
 import saps.catalog.core.Catalog;
 import saps.common.core.model.SapsLandsatImage;
 import org.apache.log4j.Logger;
 
-public class GetLandsatImages implements CatalogRetry<List<SapsLandsatImage>> {
+public class GetLandsatImages implements CatalogRetry<SapsLandsatImage> {
 
     private static final Logger LOGGER = Logger.getLogger(GetLandsatImages.class);
     
@@ -21,9 +20,9 @@ public class GetLandsatImages implements CatalogRetry<List<SapsLandsatImage>> {
     }
 
     @Override
-    public List<SapsLandsatImage> run() {
-	List<SapsLandsatImage> X = imageStore.getLandsatImages(region, date);
-	//LOGGER.info(X);
-        return imageStore.getLandsatImages(region, date);
+    public SapsLandsatImage run() {
+	SapsLandsatImage X = imageStore.getLandsatImages(region, date);
+	LOGGER.info(X);
+        return X;
     }
 }

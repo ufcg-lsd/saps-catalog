@@ -66,19 +66,17 @@ public class JDBCCatalogUtil {
     return imageTasks;
   }
 
-  public static List<SapsLandsatImage> extractSapsImages(ResultSet rs) throws JDBCCatalogException {
-    List<SapsLandsatImage> validImages = new ArrayList<>();
+  public static SapsLandsatImage extractSapsImages(ResultSet rs) throws JDBCCatalogException {
+    SapsLandsatImage sapsLandImage = null;
     while(true) {
       try {
         if (!rs.next()) break;
-        validImages.add(
+	  sapsLandImage =
           new SapsLandsatImage(
-          rs.getString(JDBCCatalogConstants.Tables.LandsatImages.PRODUCT_ID),
-          rs.getDate(JDBCCatalogConstants.Tables.LandsatImages.DATE),
-          rs.getString(JDBCCatalogConstants.Tables.LandsatImages.DATASET)));
+          rs.getString(JDBCCatalogConstants.Tables.LandsatImages.LANDSAT_KEY));
       } catch (SQLException e) {
         throw new JDBCCatalogException("Error while extract landsat images", e);
       }
-    } return validImages;
+    } return sapsLandImage;
   }
 }

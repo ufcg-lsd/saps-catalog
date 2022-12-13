@@ -187,12 +187,9 @@ public class CatalogUtils {
       String digestProcessing,
       String message) {  
       
-    //how to deal with date value, java date, sql date or string ?    
-    //Collection <SapsLandsatImage> newColl = (validateLandsatImage(imageStore, region, date, dataset, message))
-    //if newColl.length > 0: then continue, else return (?)
-
-    List<SapsLandsatImage> landsatImagesList = validateLandsatImage(imageStore, region, date, message);
-    if (landsatImagesList.size() > 0) {
+    SapsLandsatImage sapsLandsatImage = validateLandsatImage(imageStore, region, date, message);
+    if (sapsLandsatImage != null) {
+      LOGGER.info(sapsLandsatImage);
       LOGGER.debug("Landsat image has been found");
 
       return retry(
@@ -228,7 +225,7 @@ public class CatalogUtils {
    * @return boolean indicating if the image does exist or not
    * 
    */
-    private static List<SapsLandsatImage> validateLandsatImage(Catalog imageStore, String region, Date date, String message) {
+    private static SapsLandsatImage validateLandsatImage(Catalog imageStore, String region, Date date, String message) {
       // SQL QUERY, if we got the image return TRUE, else return FALSE
       return retry(new GetLandsatImages(imageStore, region, date), CATALOG_DEFAULT_SLEEP_SECONDS, message);
     }     

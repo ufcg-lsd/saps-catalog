@@ -59,9 +59,7 @@ public class JDBCCatalogConstants {
     }
 
     public final class LandsatImages {
-      public static final String DATE = "date_acquired";
-      public static final String PRODUCT_ID = "landsat_key";
-      public static final String DATASET = "spacecraft_id";
+      public static final String LANDSAT_KEY = "landsat_key";
     }
 
     public final class User {
@@ -137,7 +135,7 @@ public class JDBCCatalogConstants {
       public static final String LANDSAT_IMAGES = "SELECT * FROM "
       + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES  
       + " WHERE " 
-      + JDBCCatalogConstants.Tables.LandsatImages.PRODUCT_ID 
+      + JDBCCatalogConstants.Tables.LandsatImages.LANDSAT_KEY
       + " = ? LIMIT 1";
 
       public static final String USER =
@@ -340,7 +338,7 @@ public class JDBCCatalogConstants {
 	"CREATE TABLE IF NOT EXISTS "
 	    + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES
 	    + " ( "
-	    + JDBCCatalogConstants.Tables.LandsatImages.PRODUCT_ID
+	    + JDBCCatalogConstants.Tables.LandsatImages.LANDSAT_KEY
 	    + " BIGINT PRIMARY KEY ) ";
   }
 

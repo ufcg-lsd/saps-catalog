@@ -117,7 +117,7 @@ public interface Catalog {
    */
   List<SapsImage> getAllTasks() throws CatalogException;
 
-  List<SapsLandsatImage> getLandsatImages(String region, Date date) throws CatalogException;
+  SapsLandsatImage getLandsatImages(String region, Date date) throws CatalogException;
 
   List<SapsImage> getTasksByState(ImageTaskState... tasksStates) throws CatalogException;
 

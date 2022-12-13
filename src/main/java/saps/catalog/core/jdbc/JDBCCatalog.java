@@ -373,7 +373,7 @@ public class JDBCCatalog implements Catalog {
   }
 
   @Override 
-  public List<SapsLandsatImage> getLandsatImages(String region, Date date) throws CatalogException {
+  public SapsLandsatImage getLandsatImages(String region, Date date) throws CatalogException {
 
     if (region == null || region.isEmpty()) {
       LOGGER.error("Invalid region " + region);
@@ -403,7 +403,7 @@ public class JDBCCatalog implements Catalog {
       statement.execute();
 
       ResultSet rs = statement.getResultSet();
-      List<SapsLandsatImage> result = JDBCCatalogUtil.extractSapsImages(rs);
+      SapsLandsatImage result = JDBCCatalogUtil.extractSapsImages(rs);
       rs.close();
       return result;
    
