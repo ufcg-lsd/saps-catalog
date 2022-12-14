@@ -40,33 +40,31 @@ df_task['spent_time'] = spent_time
 
 # %%
 dfs_lan = dict()
+df_landasat = pd.read_csv(dump_landsat_path).set_index('LANDSAT_KEY')
+
 for i,r in tqdm(df_task.iterrows(), total=df_task.shape[0]):
+    task_landsat_key = str(r['region']) + r['image_date'].replace('-', '')
+    task_landsat_key = int(task_landsat_key)
+
     try:
-        year = r['image_date'].split("-")[0]
-        if year < '2022':
-            df_landasat = pd.read_csv(f"{dump_landsat_path}/output_{year}.csv")
-            df_landasat = df_landasat[df_landasat['DATE_ACQUIRED'] == r['image_date']]
-            df_landasat = df_landasat[df_landasat['SPACECRAFT_ID'] == str(r['dataset']).upper()]
+      df_landasat_row = df_landasat.loc[task_landsat_key]
+      dfs_lan[i] = {
+          'task_id': r['task_id'],
+          'state': r['state'],
+          'creation_time': r['creation_time'],
+          'updated_time': r['updated_time'],
+          'spent_time': r['spent_time'],
+          'total_size': df_landasat_row['TOTAL_SIZE'],
+          'valid_image': True,
+          'product id': df_landasat_row['PRODUCT_ID'],
+          'error_msg': r['error_msg'],
+          }
 
-            for product_id, total_size in zip(df_landasat['PRODUCT_ID'], df_landasat['TOTAL_SIZE']):
-                region_id = product_id.split("_")[2]
-
-                if str(r['region']) == region_id:
-                  dfs_lan[i] = {
-                      'task_id': r['task_id'],
-                      'state': r['state'],
-                      'creation_time': r['creation_time'],
-                      'updated_time': r['updated_time'],
-                      'spent_time': r['spent_time'],
-                      'total_size': total_size,
-                      'valid_image': True,
-                      'product id': product_id,
-                      'error_msg': r['error_msg'],
-                  }
     except Exception as e:
-        print(e)
+        continue
 
 valid_tasks_df = pd.DataFrame(data=dfs_lan.values(), index=dfs_lan.keys())
+
 
 # %%
 invalid_tasks = dict()
@@ -161,14 +159,17 @@ raw_df_day = pd.concat([valid_tasks_df, invalid_tasks_df])
 raw_df_day.reset_index(drop="index", inplace=True)
 
 # %%
-print(type(generate_days_out))
-if generate_days_out:
-  raw_df_day.to_csv(days_task_raw_filepath, index=False, compression='gzip')
+if generate_days_out and raw_df_day.shape[0]:
+  raw_df_day.to_csv(days_task_raw_filepath, index=False)
   overview_df_day = generate_overview(raw_df_day)
-  overview_df_day.to_csv(days_task_overview_filepath, compression='gzip')
+  overview_df_day.to_csv(days_task_overview_filepath)
   
 # %%
-raw_df_old = pd.read_csv(general_task_raw_filepath, converters={'total_size': eval, 'valid_image': eval})
+try:
+    raw_df_old = pd.read_csv(general_task_raw_filepath, converters={'valid_image': eval})
+except Exception as e:
+    raw_df_old = pd.DataFrame()
+
 raw_df_new = pd.concat([raw_df_old, raw_df_day])
 raw_df_new.to_csv(general_task_raw_filepath, index=False)
 
