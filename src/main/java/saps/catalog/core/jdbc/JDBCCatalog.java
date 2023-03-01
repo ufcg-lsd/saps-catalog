@@ -152,6 +152,124 @@ public class JDBCCatalog implements Catalog {
     return new java.sql.Date(date.getTime());
   }
 
+  public SapsUserJob addJob(
+	String jobId, 
+	String lowerLeftLatitude, 
+	String lowerLeftLongitude,
+	String upperRightLatitude, 
+	String upperRightLongitude, 
+	String state,
+	String userEmail,
+  String jobLabel,
+	Date startDate,
+	Date endDate,
+	int priority,
+	List<String> taskIds, 
+	Date updatedTime,
+	Date creationTime) 
+	throws CatalogException {
+      Timestamp now = new Timestamp(System.currentTimeMillis());      
+      SapsUserJob userJob = new SapsUserJob(
+	      jobId,
+        lowerLeftLatitude, 
+	      lowerLeftLongitude, 
+	      upperRightLatitude,
+	      upperRightLongitude,
+	      state,
+	      userEmail,
+	      jobLabel,
+	      startDate,
+	      endDate,
+	      priority,
+	      taskIds,
+	      now,
+	      now);
+
+    if (jobId == null || jobId.isEmpty()) {
+      LOGGER.error("job with empty id");
+      throw new IllegalArgumentException("Job with empty id.");
+    }
+
+    if (lowerLeftLatitude == null || lowerLeftLatitude.isEmpty() 
+    || lowerLeftLongitude == null || lowerLeftLongitude.isEmpty()
+    || upperRightLatitude == null || upperRightLatitude.isEmpty()
+    || upperRightLongitude == null || upperRightLongitude.isEmpty()) {
+      LOGGER.error("job with invalid coordinates");
+      throw new IllegalArgumentException("Job with invalid coordinates.");
+    }
+
+    if (userEmail == null || userEmail.isEmpty()) {
+      LOGGER.error("job must have an user");
+      throw new IllegalArgumentException("Job must have a valid user.");
+    }
+
+    LOGGER.info("Adding job " + userJob.getJobId() + " with priority " + userJob.getPriority());
+    //LOGGER.info(job.toString());
+
+    PreparedStatement insertStatement = null;
+    Connection connection = null;
+
+    try {
+      connection = getConnection();
+
+      insertStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Insert.JOB);
+      insertStatement.setString(1, userJob.getJobId());
+      insertStatement.setString(2, userJob.getLowerLeftLatitude());
+      insertStatement.setString(3, userJob.getLowerLeftLongitude());
+      insertStatement.setDate(4, userJob.getUpperRightLatitude());
+      insertStatement.setString(5, userJob.getUpperRightLongitude());
+      insertStatement.setString(6, userJob.getState());
+      insertStatement.setString(6, userJob.getUserEmail());
+      insertStatement.setString(8, userJob.getJobLabel());
+      insertStatement.setInt(9, javaDateToSqlDate(userJob.getStartDate()));
+      insertStatement.setString(10, javaDateToSqlDate(userJob.getEndDate()));
+      insertStatement.setString(11, userJob.getPriority());
+      insertStatement.setString(12, userJob.getTaskIds());
+      insertStatement.setString(13, userJob.getInputDownloadingTag());
+      insertStatement.setString(14, userJob.getPreProcessingTag());
+      insertStatement.setString(15, javaDateToSqlDate(userJob.getUpdatedTime()));
+      insertStatement.setString(16, javaDateToSqlDate(userJob.getCreationTime()));
+      insertStatement.setQueryTimeout(300);
+
+      insertStatement.execute();
+    } catch (SQLException e) {
+      throw new CatalogException("Error while insert a new job");
+    } finally {
+      close(insertStatement, connection);
+    }
+
+    return userJob;
+
+  }
+
+  @Override
+  public void updateUserJob(SapsUserJob userJob) throws CatalogException {
+
+    if (userJob == null) {
+      LOGGER.error("Trying to update empty job.");
+      throw new IllegalArgumentException("Trying to update null user job")
+    }
+
+    PreparedStatement updateStatement = null;
+    Connection connection = null;
+
+    try {
+      Connection = getConnection();
+
+      updateStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Update.Job);
+      updateStatement.setString(1, userJob.getState().getValue());
+      updateStatement.setString(2, userJob.getJobId());
+      updateStatement.setQueryTimeout(300);
+
+      uppdateStatement.execute();
+      catch (SQLException e) {
+        throw new CatalogException("Error while try to update job");
+      } finally {
+        close(updateStatement, connection);
+      }
+    }
+  }
+
   @Override
   public SapsImage addTask(
       String taskId,
@@ -350,6 +468,35 @@ public class JDBCCatalog implements Catalog {
   }
 
   @Override
+  public List<SapsImage> getAllTasksWithPagination(String search, Integer page, Integer size, String sortField,
+      String sortOrder) throws CatalogException {
+
+    Statement statement = null;
+    Connection conn = null;
+
+    String query = buildGetTasksWithPaginationQuery(search, page, size, sortField, sortOrder);
+    
+    try {
+      
+      conn = getConnection();
+      statement = conn.createStatement();
+      statement.setQueryTimeout(300);
+
+      statement.execute(JDBCCatalogConstants.Queries.Select.TASKS);
+      ResultSet rs = statement.getResultSet();
+      return JDBCCatalogUtil.extractSapsTasks(rs);
+
+    } catch (SQLException e) {
+      throw new CatalogException("Error while select all tasks");
+    } catch (JDBCCatalogException e) {
+      throw new CatalogException("Error while extract all tasks");
+    } finally {
+      close(statement, conn);
+    }
+  }
+
+
+  @Override
   public List<SapsImage> getAllTasks() throws CatalogException {
     Statement statement = null;
     Connection conn = null;
@@ -368,6 +515,74 @@ public class JDBCCatalog implements Catalog {
     } finally {
       close(statement, conn);
     }
+  }
+
+  @Override
+  public List<SapsUserJob> getTasksByJob(String jobId, String search, Integer page, Integer size, String sortField,
+      String sortOrder) throws CatalogException {
+
+    if (jobId == null || jobId.isEmpty()) {
+      LOGGER.error("invalid job id " + jobId);
+      throw new IllegalArgumentException("Job id is missing");
+    }
+
+    String query = buildTasksByJobWithPaginationQuery(search, page, size, sortField, sortOrder);
+
+    PreparedStatement statement = null; 
+    Connection connection = null;
+
+    try {
+      connection = getConnection();
+
+      selectStatement = connection.prepareStatement(query);
+      statement.setString(1, jobId);
+      statement.setQueryTimeout(300);
+
+      statement.execute();
+
+      ResultSet rs = statement.getResultSet();
+      List<SapsImage> tasks = JDBCCatalogUtil.extractSapsImages(rs);
+      rs.close();
+      
+      return tasks;
+
+      catch (SQLException e) {
+	      throw new CatalogException("Error while extract all tasks");
+	  } catch (JDBCCatalogException e) {
+        throw new CatalogException("Error while extract all tasks");
+	  } finally {
+	    close(statement, conn);
+	  }
+
+    }
+
+  }
+
+  @Override
+    public List<SapsUserJob> getAllJobs(String search, Integer page, Integer size, String sortField,
+      String sortOrder) throws CatalogException {
+
+      String query = buildJobsWithPaginationQuery(search, page, size, sortField, sortOrder);
+      
+      Statement statement = null;
+      Connection conn = null;
+
+	    try {
+		    conn = getConnection();
+		    statement = conn.createStatement();			
+		    statement.setQueryTimeout(300);	
+
+		    statement.execute(query);	
+		    ResultSet rs = statement.getResultSet();
+		    return JDBCCatalogUtil.extractSapsJobs(rs);
+
+	  } catch (SQLException e) {
+	      throw new CatalogException("Error while extract all jobs");
+	  } catch (JDBCCatalogException e) {
+        throw new CatalogException("Error while extract all tasks");
+	  } finally {
+	    close(statement, conn);
+	  }
   }
 
   @Override 
@@ -606,6 +821,50 @@ public class JDBCCatalog implements Catalog {
     } finally {
       close(queryStatement, connection);
     }
+  }
+
+  private String buildGetTasksWithPaginationQuery(String search, Integer page, Integer size, String sortField,
+      String sortOrder) {
+    StringBuilder query = new StringBuilder("SELECT * FROM " + JDBCCatalogConstants.TablesName.TASKS);
+
+    if (search != null && !search.trim().isEmpty())
+      query.append(" WHERE to_char(image_date , 'YYYY-MM-DD') LIKE '" + search + "%' ");
+    if (sortField != null && sortOrder != null && !sortField.trim().isEmpty() && !sortOrder.trim().isEmpty())
+      query.append(" ORDER BY " + sortField + " " + sortOrder.toUpperCase());
+    if (page > 0 && size > 0)
+      query.append(" OFFSET " + (page - 1) * size + " ROWS FETCH NEXT " + size + " ROWS ONLY");
+
+    return query.toString();
+  }
+
+  private String buildJobsWithPaginationQuery(String search, Integer page, Integer size, String sortField,
+      String sortOrder) {
+    StringBuilder query = new StringBuilder("SELECT * FROM " + JDBCCatalogConstants.TablesName.JOB);
+
+    if (search != null && !search.trim().isEmpty())
+      query.append(" WHERE to_char(creation_time, 'YYYY-MM-DD') LIKE '" + search + "%' "); // -> startDate and endDate could be used here 
+    if (sortField != null && sortOrder != null && !sortField.trim().isEmpty() && !sortOrder.trim().isEmpty())
+      query.append(" ORDER BY " + sortField + " " + sortOrder.toUpperCase());
+    if (page > 0 && size > 0)
+      query.append(" OFFSET " + (page - 1) * size + " ROWS FETCH NEXT " + size + " ROWS ONLY");
+
+    return query.toString();
+  
+  }
+
+  private String buildTasksByJobWithPaginationQuery(String search, Integer page, Integer size, String sortField,
+      String sortOrder) {
+    StringBuilder query = new StringBuilder("SELECT tasks_ids FROM " + JDBCCatalogConstants.TablesName.JOB);
+
+    if (search != null && !search.trim().isEmpty())
+      query.append(" WHERE to_char(creation_time, 'YYYY-MM-DD') LIKE '" + search + "%' AND job_id = ?"); // -> startDate and endDate could be used here 
+    if (sortField != null && sortOrder != null && !sortField.trim().isEmpty() && !sortOrder.trim().isEmpty())
+      query.append(" ORDER BY " + sortField + " " + sortOrder.toUpperCase());
+    if (page > 0 && size > 0)
+      query.append(" OFFSET " + (page - 1) * size + " ROWS FETCH NEXT " + size + " ROWS ONLY");
+
+    return query.toString();
+  
   }
 
   private String buildOngoingWithPaginationQuery(String search, Integer page, Integer size, String sortField,

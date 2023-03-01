@@ -20,6 +20,7 @@ public class JDBCCatalogConstants {
     public static final String DEPLOY_CONFIG = "DEPLOY_CONFIG";
     public static final String PROVENANCE_DATA = "PROVENANCE_DATA";
     public static final String LANDSAT_IMAGES = "LANDSAT_IMAGES";
+    public static final String JOB = "JOB";
   }
 
   public final class Tables {
@@ -57,6 +58,23 @@ public class JDBCCatalogConstants {
         }
       }
     }
+
+    public final class Job {
+      public static final String ID = "job_id";
+      public static final String LOWER_LEFT_LATITUDE = "lowerleftlatitude";
+      public static final String LOWER_LEFT_LONGITUDE = "lowerleftlongitude";
+      public static final String UPPER_RIGHT_LATITUDE = "upperrightlatitude";
+      public static final String UPPER_RIGHT_LONGITUDE = "upperrightlongitude";
+      public static final String STATE = "state";
+      public static final String USER_EMAIL = "user_email";
+      public static final String JOB_LABEL = "job_label";
+      public static final String START_DATE = "start_date";
+      public static final String END_DATE = "end_date";
+      public static final String PRIORITY = "priority";
+      public static final String TASKS_IDS = "tasks_ids";
+      public static final String UPDATED_TIME = "updated_time";
+      public static final String CREATION_TIME = "creation_time";
+
 
     public final class LandsatImages {
       public static final String LANDSAT_KEY = "landsat_key";
@@ -106,7 +124,12 @@ public class JDBCCatalogConstants {
 
       public static final String USER = "INSERT INTO " + JDBCCatalogConstants.TablesName.USERS
           + " VALUES(?, ?, ?, ?, ?, ?)";
+
+      public static final String JOB = "INSERT INTO "
+      + JDBCCatalogConstants.TablesName.Job
+      + " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     }
+
 
     public final class Update {
       public static final String TASK = "UPDATE "
@@ -125,10 +148,29 @@ public class JDBCCatalogConstants {
           + "WHERE "
           + JDBCCatalogConstants.Tables.Task.ID
           + " = ?";
+      
+      public static final String JOB = "UPDATE " 
+      + JDBCCatalogConstants.TablesName.JOB 
+      + " SET"
+      + JDBCCatalogConstants.Tables.Job.STATE 
+      + " = ?, "
+      + JDBCCatalogConstants.Tables.Job.UPDATED_TIME
+      + " = now() "
+      + " WHERE "
+      + JDBCCatalogConstants.Tables.Job.ID
+      + " = ?";
     }
 
     public final class Select {
       public static final String TASKS = "SELECT * FROM " + JDBCCatalogConstants.TablesName.TASKS;
+
+      public static final String JOBS = "SELECT * FROM " + JDBCCatalogConstants.TablesName.JOB;
+
+      public static final String TASKS_BY_JOB = "SELECT tasks_ids FROM " 
+      + JDBCCatalogConstants.TablesName.JOB 
+      + " WHERE " 
+      + JDBCCatalogConstants.Tables.Job.ID 
+      + " = ?";
 
       public static final String LANDSAT_IMAGES = "SELECT * FROM "
       + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES  

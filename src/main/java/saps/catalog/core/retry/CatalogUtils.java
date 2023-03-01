@@ -164,6 +164,73 @@ public class CatalogUtils {
   }
 
   /**
+   */
+
+  public static List<SapsImage> getTasksByJobWithPagination (Catalog imageStore, String search, Integer page,
+    Integer size, String sortField, String sortOrder, String message) {
+    return retry(new GetTasksByJobWithPagination(imageStore, search, page, size, sortField, sortOrder),
+    CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  }
+
+  /**
+   */
+
+  public static SapsUserJob getAllJobsWithPagination (Catalog imageStore, String search, Integer page,
+    Integer size, String sortField, String sortOrder, String message) {
+    return retry(new etAllJobsWithPagination(imageStore, search, page, size, sortField, sortOrder),
+    CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  }
+
+  /**
+   */
+
+  public static SapsUserJob addNewUserJob(
+    Catalog imageStore,
+    String jobId, 
+		String lowerLeftLatitude,
+    String lowerLeftLongitude,
+		String upperRightLatitude,
+    String upperRightLongitude,
+		String state,
+    String userEmail, 
+    String jobLabel,
+		Date startDate,
+    Date endDate,
+    int priority,
+    List<String> taskIds,
+		String inputDownloadingPhaseTag,
+    String preProcessingPhaseTag,
+    String processingPhaseTag,
+		Date updatedTime,
+    Date creationTime,
+    String message
+  ) {
+    return retry(
+      new AddNewUserJob(
+        imageStore,
+        jobId,
+        lowerLeftLatitude,
+        lowerLeftLongitude,
+        upperRightLatitude,
+        upperRightLongitude,
+        state,
+        userEmail,
+        jobLabel,
+        startDate,
+        endDate,
+        priority,
+        tasksIds,
+        inputDownloadingPhaseTag,
+        preProcessingPhaseTag,
+        processingPhaseTag,
+        updatedTime,
+        creationTime
+      ), CATALOG_DEFAULT_SLEEP_SECONDS,
+      message
+    )
+  }
+
+  /**
    * This function adds new task.
    *
    * @param imageStore               catalog component

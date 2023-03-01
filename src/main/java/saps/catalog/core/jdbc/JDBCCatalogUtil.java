@@ -66,6 +66,39 @@ public class JDBCCatalogUtil {
     return imageTasks;
   }
 
+  public static List<SapsImage> extractSapsJobs(ResultSet rs) throws JDBCCatalogException {
+	  List<SapsUserJob> userJobs = new ArrayList<SapsUserJob>;
+    while (true) {
+      try {
+        if (!rs.next()) break;
+        userJobs.add(
+          new SapsUserJob(
+            rs.getString(JDBCCatalogConstants.Tables.Job.ID),
+            rs.getString(JDBCCatalogConstants.Tables.Job.LOWER_LEFT_LATITUDE),
+            rs.getString(JDBCCatalogConstants.Tables.Job.LOWER_LEFT_LONGITUDE),
+            rs.getString(JDBCCatalogConstants.Tables.Job.UPPER_RIGHT_LATITUDE),
+            rs.getString(JDBCCatalogConstants.Tables.Job.UPPER_RIGHT_LONGITUDE),
+            rs.getString(JDBCCatalogConstants.Tables.Job.STATE),
+            rs.getString(JDBCCatalogConstants.Tables.Job.USER_EMAIL),
+            rs.getString(JDBCCatalogConstants.Tables.Job.JOB_LABEL),
+            rs.getString(JDBCCatalogConstants.Tables.Job.START_DATE),
+            rs.getString(JDBCCatalogConstants.Tables.Job.END_DATE),
+            rs.getString(JDBCCatalogConstants.Tables.Job.PRIORITY),
+            rs.getString(JDBCCatalogConstants.Tables.Job.TASKS_IDS),
+            rs.getString(JDBCCatalogConstants.Tables.Job.INPUTDOWNLOADING_TAG),
+            rs.getString(JDBCCatalogConstants.Tables.Job.PREPROCESSING_TAG),
+            rs.getString(JDBCCatalogConstants.Tables.Job.PROCESSING_TAG),
+            rs.getString(JDBCCatalogConstants.Tables.Job.UPDATED_TIME),
+            rs.getString(JDBCCatalogConstants.Tables.Job.CREATION_TIME)
+          )
+        );
+      } catch (SQLException e) {
+        throw new JDBCCatalogException("Error while extract task", e);
+      }
+    }
+    return userJobs;
+  }
+
   public static SapsLandsatImage extractSapsImages(ResultSet rs) throws JDBCCatalogException {
     SapsLandsatImage sapsLandImage = null;
     while(true) {

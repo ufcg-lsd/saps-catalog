@@ -132,9 +132,29 @@ public interface Catalog {
       boolean adminRole)
       throws CatalogException;
 
+  void addJob(
+      String lowerLeftLatitude,
+      String lowerLeftLongitude,
+      String upperRightLatitude,
+      String upperRightLongitude,
+	  String state, 
+      String userEmail,
+      String jobLabel,
+	  Date startDate,
+      Date endDate,
+      int priority,
+      List<String> taskIds,
+	  String inputDownloadingPhaseTag,
+      String preProcessingPhaseTag,
+      String processingPhaseTag,
+	  Date updatedTime,
+      Date creationTime
+    )
   // FIXME: i think we should throw an exception when there is no imageTask in the
   // Catalog
   void updateImageTask(SapsImage imageTask) throws CatalogException;
+
+  void updateUserJob(SapsUserJob userJob) throws CatalogException;
 
   // FIXME: we should explain we return an empty list in some cases
   /**
@@ -168,6 +188,14 @@ public interface Catalog {
       throws CatalogException;
 
   List<SapsImage> getTasksOngoingWithPagination(String search, Integer page, Integer size,
+      String sortField, String sortOrder)
+      throws CatalogException;
+
+  List<SapsImage> getTasksByJob(String jobId, String search, Integer page, Integer size,
+      String sortField, String sortOrder)
+      throws CatalogException;
+
+  List<SapsImage> getAllJobs(String search, Integer page, Integer size,
       String sortField, String sortOrder)
       throws CatalogException;
 
