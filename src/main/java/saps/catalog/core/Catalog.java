@@ -9,6 +9,7 @@ import saps.catalog.core.exceptions.TaskNotFoundException;
 import saps.catalog.core.exceptions.UserNotFoundException;
 import saps.common.core.model.SapsImage;
 import saps.common.core.model.SapsUser;
+import saps.common.core.model.SapsUserJob;
 import saps.common.core.model.SapsLandsatImage;
 import saps.common.core.model.enums.ImageTaskState;
 
@@ -132,24 +133,20 @@ public interface Catalog {
       boolean adminRole)
       throws CatalogException;
 
-  void addJob(
+  SapsUserJob addJob(
+      String jobId,
       String lowerLeftLatitude,
       String lowerLeftLongitude,
       String upperRightLatitude,
       String upperRightLongitude,
-	  String state, 
       String userEmail,
       String jobLabel,
-	  Date startDate,
+      Date startDate,
       Date endDate,
       int priority,
-      List<String> taskIds,
-	  String inputDownloadingPhaseTag,
-      String preProcessingPhaseTag,
-      String processingPhaseTag,
-	  Date updatedTime,
-      Date creationTime
-    )
+      List<String> taskIds)
+      throws CatalogException;
+
   // FIXME: i think we should throw an exception when there is no imageTask in the
   // Catalog
   void updateImageTask(SapsImage imageTask) throws CatalogException;

@@ -74,7 +74,7 @@ public class JDBCCatalogConstants {
       public static final String TASKS_IDS = "tasks_ids";
       public static final String UPDATED_TIME = "updated_time";
       public static final String CREATION_TIME = "creation_time";
-
+    }
 
     public final class LandsatImages {
       public static final String LANDSAT_KEY = "landsat_key";
@@ -113,7 +113,6 @@ public class JDBCCatalogConstants {
   }
 
   public final class Queries {
-
     public final class Insert {
       public static final String TASK = "INSERT INTO "
           + JDBCCatalogConstants.TablesName.TASKS
@@ -126,10 +125,9 @@ public class JDBCCatalogConstants {
           + " VALUES(?, ?, ?, ?, ?, ?)";
 
       public static final String JOB = "INSERT INTO "
-      + JDBCCatalogConstants.TablesName.Job
-      + " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+          + JDBCCatalogConstants.TablesName.JOB
+          + " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     }
-
 
     public final class Update {
       public static final String TASK = "UPDATE "
@@ -148,17 +146,17 @@ public class JDBCCatalogConstants {
           + "WHERE "
           + JDBCCatalogConstants.Tables.Task.ID
           + " = ?";
-      
-      public static final String JOB = "UPDATE " 
-      + JDBCCatalogConstants.TablesName.JOB 
-      + " SET"
-      + JDBCCatalogConstants.Tables.Job.STATE 
-      + " = ?, "
-      + JDBCCatalogConstants.Tables.Job.UPDATED_TIME
-      + " = now() "
-      + " WHERE "
-      + JDBCCatalogConstants.Tables.Job.ID
-      + " = ?";
+
+      public static final String JOB = "UPDATE "
+          + JDBCCatalogConstants.TablesName.JOB
+          + " SET"
+          + JDBCCatalogConstants.Tables.Job.STATE
+          + " = ?, "
+          + JDBCCatalogConstants.Tables.Job.UPDATED_TIME
+          + " = now() "
+          + " WHERE "
+          + JDBCCatalogConstants.Tables.Job.ID
+          + " = ?";
     }
 
     public final class Select {
@@ -166,24 +164,23 @@ public class JDBCCatalogConstants {
 
       public static final String JOBS = "SELECT * FROM " + JDBCCatalogConstants.TablesName.JOB;
 
-      public static final String TASKS_BY_JOB = "SELECT tasks_ids FROM " 
-      + JDBCCatalogConstants.TablesName.JOB 
-      + " WHERE " 
-      + JDBCCatalogConstants.Tables.Job.ID 
-      + " = ?";
+      public static final String TASKS_BY_JOB = "SELECT tasks_ids FROM "
+          + JDBCCatalogConstants.TablesName.JOB
+          + " WHERE "
+          + JDBCCatalogConstants.Tables.Job.ID
+          + " = ?";
 
       public static final String LANDSAT_IMAGES = "SELECT * FROM "
-      + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES  
-      + " WHERE " 
-      + JDBCCatalogConstants.Tables.LandsatImages.LANDSAT_KEY
-      + " = ? LIMIT 1";
+          + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES
+          + " WHERE "
+          + JDBCCatalogConstants.Tables.LandsatImages.LANDSAT_KEY
+          + " = ? LIMIT 1";
 
-      public static final String USER =
-          "SELECT * FROM "
-              + JDBCCatalogConstants.TablesName.USERS
-              + " WHERE "
-              + JDBCCatalogConstants.Tables.User.EMAIL
-              + " = ?";
+      public static final String USER = "SELECT * FROM "
+          + JDBCCatalogConstants.TablesName.USERS
+          + " WHERE "
+          + JDBCCatalogConstants.Tables.User.EMAIL
+          + " = ?";
 
       public static final String TASKS_BY_STATE_ORDER_BY_PRIORITY_ASC = "SELECT * FROM "
           + JDBCCatalogConstants.TablesName.TASKS
@@ -364,37 +361,34 @@ public class JDBCCatalogConstants {
         + JDBCCatalogConstants.Tables.Task.FEDERATION_MEMBER
         + ") )";
 
-    public static final String PROVENANCE_DATA =
-        "CREATE TABLE IF NOT EXISTS "
-            + JDBCCatalogConstants.TablesName.PROVENANCE_DATA
-            + "("
-            + JDBCCatalogConstants.Tables.Task.ID
-            + " VARCHAR(255) PRIMARY KEY, "
-            + JDBCCatalogConstants.Tables.ProvenanceData.INPUT_METADATA
-            + " VARCHAR(255), "
-            + JDBCCatalogConstants.Tables.ProvenanceData.INPUT_OPERATING_SYSTEM
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.ProvenanceData.INPUT_KERNEL_VERSION
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.ProvenanceData.PREPROCESSING_METADATA
-            + " VARCHAR(255), "
-            + JDBCCatalogConstants.Tables.ProvenanceData.PREPROCESSING_OPERATING_SYSTEM
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.ProvenanceData.PREPROCESSING_KERNEL_VERSION
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.ProvenanceData.OUTPUT_METADATA
-            + " VARCHAR(255), "
-            + JDBCCatalogConstants.Tables.ProvenanceData.OUTPUT_OPERATING_SYSTEM
-            + " VARCHAR(100), "
-            + JDBCCatalogConstants.Tables.ProvenanceData.OUTPUT_KERNEL_VERSION
-            + " VARCHAR(100) )";
+    public static final String PROVENANCE_DATA = "CREATE TABLE IF NOT EXISTS "
+        + JDBCCatalogConstants.TablesName.PROVENANCE_DATA
+        + "("
+        + JDBCCatalogConstants.Tables.Task.ID
+        + " VARCHAR(255) PRIMARY KEY, "
+        + JDBCCatalogConstants.Tables.ProvenanceData.INPUT_METADATA
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.ProvenanceData.INPUT_OPERATING_SYSTEM
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.ProvenanceData.INPUT_KERNEL_VERSION
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.ProvenanceData.PREPROCESSING_METADATA
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.ProvenanceData.PREPROCESSING_OPERATING_SYSTEM
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.ProvenanceData.PREPROCESSING_KERNEL_VERSION
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.ProvenanceData.OUTPUT_METADATA
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.ProvenanceData.OUTPUT_OPERATING_SYSTEM
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.ProvenanceData.OUTPUT_KERNEL_VERSION
+        + " VARCHAR(100) )";
 
-    public static final String LANDSAT_IMAGES =
-	"CREATE TABLE IF NOT EXISTS "
-	    + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES
-	    + " ( "
-	    + JDBCCatalogConstants.Tables.LandsatImages.LANDSAT_KEY
-	    + " BIGINT PRIMARY KEY ) ";
+    public static final String LANDSAT_IMAGES = "CREATE TABLE IF NOT EXISTS "
+        + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES
+        + " ( "
+        + JDBCCatalogConstants.Tables.LandsatImages.LANDSAT_KEY
+        + " BIGINT PRIMARY KEY ) ";
   }
-
 }
