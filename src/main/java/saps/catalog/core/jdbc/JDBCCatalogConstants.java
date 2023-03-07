@@ -20,7 +20,7 @@ public class JDBCCatalogConstants {
     public static final String DEPLOY_CONFIG = "DEPLOY_CONFIG";
     public static final String PROVENANCE_DATA = "PROVENANCE_DATA";
     public static final String LANDSAT_IMAGES = "LANDSAT_IMAGES";
-    public static final String JOB = "JOB";
+    public static final String JOBS = "JOBS";
   }
 
   public final class Tables {
@@ -61,10 +61,10 @@ public class JDBCCatalogConstants {
 
     public final class Job {
       public static final String ID = "job_id";
-      public static final String LOWER_LEFT_LATITUDE = "lowerleftlatitude";
-      public static final String LOWER_LEFT_LONGITUDE = "lowerleftlongitude";
-      public static final String UPPER_RIGHT_LATITUDE = "upperrightlatitude";
-      public static final String UPPER_RIGHT_LONGITUDE = "upperrightlongitude";
+      public static final String LOWER_LEFT_LATITUDE = "lower_left_latitude";
+      public static final String LOWER_LEFT_LONGITUDE = "lower_left_longitude";
+      public static final String UPPER_RIGHT_LATITUDE = "upper_right_latitude";
+      public static final String UPPER_RIGHT_LONGITUDE = "upper_right_longitude";
       public static final String STATE = "state";
       public static final String USER_EMAIL = "user_email";
       public static final String JOB_LABEL = "job_label";
@@ -72,7 +72,6 @@ public class JDBCCatalogConstants {
       public static final String END_DATE = "end_date";
       public static final String PRIORITY = "priority";
       public static final String TASKS_IDS = "tasks_ids";
-      public static final String UPDATED_TIME = "updated_time";
       public static final String CREATION_TIME = "creation_time";
     }
 
@@ -116,7 +115,8 @@ public class JDBCCatalogConstants {
     public final class Insert {
       public static final String TASK = "INSERT INTO "
           + JDBCCatalogConstants.TablesName.TASKS
-          + " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+          + " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+          + " ON CONFLICT DO NOTHING ";
 
       public static final String TIMESTAMP = "INSERT INTO " + JDBCCatalogConstants.TablesName.TIMESTAMPS
           + " VALUES(?, ?, now())";
@@ -125,7 +125,7 @@ public class JDBCCatalogConstants {
           + " VALUES(?, ?, ?, ?, ?, ?)";
 
       public static final String JOB = "INSERT INTO "
-          + JDBCCatalogConstants.TablesName.JOB
+          + JDBCCatalogConstants.TablesName.JOBS
           + " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     }
 
@@ -148,13 +148,10 @@ public class JDBCCatalogConstants {
           + " = ?";
 
       public static final String JOB = "UPDATE "
-          + JDBCCatalogConstants.TablesName.JOB
+          + JDBCCatalogConstants.TablesName.JOBS
           + " SET"
           + JDBCCatalogConstants.Tables.Job.STATE
-          + " = ?, "
-          + JDBCCatalogConstants.Tables.Job.UPDATED_TIME
-          + " = now() "
-          + " WHERE "
+          + " = ? WHERE "
           + JDBCCatalogConstants.Tables.Job.ID
           + " = ?";
     }
@@ -162,10 +159,10 @@ public class JDBCCatalogConstants {
     public final class Select {
       public static final String TASKS = "SELECT * FROM " + JDBCCatalogConstants.TablesName.TASKS;
 
-      public static final String JOBS = "SELECT * FROM " + JDBCCatalogConstants.TablesName.JOB;
+      public static final String JOBS = "SELECT * FROM " + JDBCCatalogConstants.TablesName.JOBS;
 
       public static final String TASKS_BY_JOB = "SELECT tasks_ids FROM "
-          + JDBCCatalogConstants.TablesName.JOB
+          + JDBCCatalogConstants.TablesName.JOBS
           + " WHERE "
           + JDBCCatalogConstants.Tables.Job.ID
           + " = ?";
@@ -390,5 +387,39 @@ public class JDBCCatalogConstants {
         + " ( "
         + JDBCCatalogConstants.Tables.LandsatImages.LANDSAT_KEY
         + " BIGINT PRIMARY KEY ) ";
+
+    public static final String JOBS = "CREATE TABLE IF NOT EXISTS "
+        + JDBCCatalogConstants.TablesName.JOBS
+        + " ( "
+        + JDBCCatalogConstants.Tables.Job.ID
+        + " VARCHAR(255) PRIMARY KEY, "
+        + JDBCCatalogConstants.Tables.Job.LOWER_LEFT_LATITUDE
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.Job.LOWER_LEFT_LONGITUDE
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.Job.UPPER_RIGHT_LATITUDE
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.Job.UPPER_RIGHT_LONGITUDE
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.Job.STATE
+        + " VARCHAR(100), "
+        + JDBCCatalogConstants.Tables.User.EMAIL
+        + " VARCHAR(255) REFERENCES "
+        + JDBCCatalogConstants.TablesName.USERS
+        + "("
+        + JDBCCatalogConstants.Tables.User.EMAIL
+        + "), "
+        + JDBCCatalogConstants.Tables.Job.JOB_LABEL
+        + " VARCHAR(255), "
+        + JDBCCatalogConstants.Tables.Job.START_DATE
+        + " DATE, "
+        + JDBCCatalogConstants.Tables.Job.END_DATE
+        + " DATE, "
+        + JDBCCatalogConstants.Tables.Job.PRIORITY
+        + " INT, "
+        + JDBCCatalogConstants.Tables.Job.TASKS_IDS
+        + " TEXT[], "
+        + JDBCCatalogConstants.Tables.Job.CREATION_TIME
+        + " TIMESTAMP )";
   }
 }

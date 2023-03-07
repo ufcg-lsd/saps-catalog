@@ -84,6 +84,7 @@ public class JDBCCatalog implements Catalog {
       statement.execute(JDBCCatalogConstants.CreateTable.DEPLOY_CONFIG);
       statement.execute(JDBCCatalogConstants.CreateTable.PROVENANCE_DATA);
       statement.execute(JDBCCatalogConstants.CreateTable.LANDSAT_IMAGES);
+      statement.execute(JDBCCatalogConstants.CreateTable.JOBS);
 
       statement.close();
     } catch (SQLException e) {
@@ -210,41 +211,23 @@ public class JDBCCatalog implements Catalog {
 
     try {
       connection = getConnection();
-
-      
       insertStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Insert.JOB);
       
       String[] arr = userJob.getTaskIds().toArray(new String[userJob.getTaskIds().size()]);
-      Array taskIdsArr = connection.createArrayOf("VARCHAR", arr);
-      LOGGER.debug("Query 0:" + taskIdsArr);
-
+      Array taskIdsArr = connection.createArrayOf("text", arr);
       insertStatement.setString(1, userJob.getJobId());
-      LOGGER.debug("Query 1: " + insertStatement.toString());
       insertStatement.setString(2, userJob.getLowerLeftLatitude());
-      LOGGER.debug("Query 2: " + insertStatement.toString());
       insertStatement.setString(3, userJob.getLowerLeftLongitude());
-      LOGGER.debug("Query 3: " + insertStatement.toString());
       insertStatement.setString(4, userJob.getUpperRightLatitude());
-      LOGGER.debug("Query 4: " + insertStatement.toString());
       insertStatement.setString(5, userJob.getUpperRightLongitude());
-      LOGGER.debug("Query 5: " + insertStatement.toString());
       insertStatement.setString(6, userJob.getState().toString());
-      LOGGER.debug("Query 6: " + insertStatement.toString());
       insertStatement.setString(7, userJob.getUserEmail());
-      LOGGER.debug("Query 7: " + insertStatement.toString());
       insertStatement.setString(8, userJob.getJobLabel());
-      LOGGER.debug("Query 8: " + insertStatement.toString());
       insertStatement.setDate(9, javaDateToSqlDate(userJob.getStartDate()));
-      LOGGER.debug("Query 9: " + insertStatement.toString());
       insertStatement.setDate(10, javaDateToSqlDate(userJob.getEndDate()));
-      LOGGER.debug("Query 10: " + insertStatement.toString());
       insertStatement.setInt(11, userJob.getPriority());
-      LOGGER.debug("Query 11: " + insertStatement.toString());
       insertStatement.setArray(12, taskIdsArr);
-      LOGGER.debug("Query 12: " + insertStatement.toString());
-
       insertStatement.setQueryTimeout(300);
-
 
       insertStatement.execute();
     } catch (SQLException e) {
