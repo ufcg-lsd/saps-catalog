@@ -32,6 +32,7 @@ import saps.common.core.model.SapsLandsatImage;
 import saps.common.core.model.SapsUser;
 import saps.common.core.model.SapsUserJob;
 import saps.common.core.model.enums.ImageTaskState;
+import saps.common.exceptions.SapsException;
 
 public class CatalogUtils {
 
@@ -165,31 +166,15 @@ public class CatalogUtils {
     return retry(new GetUser(imageStore, userEmail), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 
-  // /**
-  // */
-
-  // public static List<SapsImage> getTasksByJobWithPagination (Catalog
-  // imageStore, String search, Integer page,
-  // Integer size, String sortField, String sortOrder, String message) {
-  // return retry(new GetTasksByJobWithPagination(imageStore, search, page, size,
-  // sortField, sortOrder),
-  // CATALOG_DEFAULT_SLEEP_SECONDS, message);
-  // }
-
-  // /**
-  // */
-
-  // public static SapsUserJob getAllJobsWithPagination (Catalog imageStore,
-  // String search, Integer page,
-  // Integer size, String sortField, String sortOrder, String message) {
-  // return retry(new etAllJobsWithPagination(imageStore, search, page, size,
-  // sortField, sortOrder),
-  // CATALOG_DEFAULT_SLEEP_SECONDS, message);
-  // }
-
   /**
+   * This function gets tasks in specific state in Catalog.
+   *
+   * @param imageStore catalog component
+   * @param state      specific state for get tasks
+   * @param page       page number
+   * @param pageSize   page size
+   * @return tasks in specific state
    */
-
   public static SapsUserJob addNewUserJob(
       Catalog imageStore,
       String jobId,
@@ -344,64 +329,33 @@ public class CatalogUtils {
     return retry(new GetAllTasks(imageStore), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 
-  /**
-   * This function return all the tasks that have not finished all the pipeline.
+  /** 
+   * This functions gets all jobs from catalog.
    * 
    * @param imageStore catalog component
    * @param search     search query
-   * @param page       pagination page number
-   * @param size       pagination page size
+   * @param page       page number
+   * @param size       page size
    * @param sortField  sort field
-   * @param sortOrder  type of sort order
+   * @param sortOrder  sort order
    * @param message    information message
-   * @return SAPS image list
+   * @return SAPS user job list
    */
-  public static List<SapsImage> getTasksOngoingWithPagination(Catalog imageStore, String search, Integer page,
-      Integer size, String sortField, String sortOrder, String message) {
-    return retry(new GetTasksOngoingWithPagination(imageStore, search, page, size, sortField, sortOrder),
-        CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  public static List<SapsUserJob> getUserJobs(Catalog imageStore, String search, Integer page,
+      Integer size, String sortField, String sortOrder, boolean withoutTasks, String message) {
+    return retry(new GetUserJobs(imageStore, search, page, size, sortField, sortOrder, withoutTasks), CATALOG_DEFAULT_SLEEP_SECONDS,
+        message);
   }
 
   /**
-   * This function return all the tasks that have finished all the pipeline.
-   * 
-   * @param imageStore catalog component
-   * @param search     search query
-   * @param page       pagination page number
-   * @param size       pagination page size
-   * @param sortField  sort field
-   * @param sortOrder  type of sort order
-   * @param message    information message
-   * @return SAPS image list
-   */
-  public static List<SapsImage> getTasksCompletedWithPagination(Catalog imageStore, String search, Integer page,
-      Integer size, String sortField, String sortOrder, String message) {
-    return retry(new GetTasksCompletedWithPagination(imageStore, search, page, size, sortField, sortOrder),
-        CATALOG_DEFAULT_SLEEP_SECONDS, message);
-  }
-
-  /**
-   * This function return the amount of tasks that have not finished all the
-   * pipeline.
+   * This function return the amount of jobs in catalog.
    * 
    * @param imageStore catalog component
    * @param search     search query
    * @param message    information message
    * @return SAPS image list
    */
-  public static Integer getCountOngoingTasks(Catalog imageStore, String search, String message) {
-    return retry(new GetCountOngoingTasks(imageStore, search), CATALOG_DEFAULT_SLEEP_SECONDS, message);
-  }
-
-  /**
-   * This function return the amount of tasks that have finished all the pipeline.
-   * 
-   * @param imageStore catalog component
-   * @param search     search query
-   * @param message    information message
-   * @return SAPS image list
-   */
-  public static Integer getCountCompletedTasks(Catalog imageStore, String search, String message) {
-    return retry(new GetCountCompletedTasks(imageStore, search), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  public static Integer getUserJobsCount(Catalog imageStore, String search, String message) {
+    return retry(new GetUserJobsCount(imageStore, search), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 }

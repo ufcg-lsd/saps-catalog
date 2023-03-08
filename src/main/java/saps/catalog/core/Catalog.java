@@ -184,23 +184,23 @@ public interface Catalog {
       String processingTag)
       throws CatalogException;
 
-  List<SapsImage> getTasksOngoingWithPagination(String search, Integer page, Integer size,
-      String sortField, String sortOrder)
-      throws CatalogException;
-
   List<SapsImage> getTasksByJob(String jobId, String search, Integer page, Integer size,
       String sortField, String sortOrder)
       throws CatalogException;
 
-  List<SapsImage> getAllJobs(String search, Integer page, Integer size,
-      String sortField, String sortOrder)
+  Integer getUserJobsCount(
+      Catalog imageStore,
+      String search,
+      String message)
       throws CatalogException;
 
-  List<SapsImage> getTasksCompletedWithPagination(String search, Integer page, Integer size,
-      String sortField, String sortOrder)
+  List<SapsUserJob> getUserJobs(
+      String state,
+      String search,
+      Integer page,
+      Integer size,
+      String sortField,
+      String sortOrder,
+      boolean withoutTasks)
       throws CatalogException;
-
-  Integer getCountOngoingTasks(String search) throws CatalogException;
-
-  Integer getCountCompletedTasks(String search) throws CatalogException;
 }
