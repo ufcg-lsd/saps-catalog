@@ -241,14 +241,14 @@ public class JDBCCatalog implements Catalog {
   @Override
   public void updateUserJob(SapsUserJob userJob) throws CatalogException {
 
-  if (userJob == null) {
-    LOGGER.error("Trying to update empty job.");
-    throw new IllegalArgumentException("Trying to update null user job");
-  }
+    if (userJob == null) {
+      LOGGER.error("Trying to update empty job.");
+      throw new IllegalArgumentException("Trying to update null user job");
+    }
 
-  Connection connection = null;
-  PreparedStatement updateStatement = null;
-  try {
+    Connection connection = null;
+    PreparedStatement updateStatement = null;
+    try {
       connection = getConnection();
 
       updateStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Update.JOB);
@@ -544,7 +544,8 @@ public class JDBCCatalog implements Catalog {
     if (search != null && !search.trim().isEmpty()) {
       query.append(" WHERE job_label LIKE '" + search + "%' ");
     } else if (allOngoingJobs) {
-      query.append(" WHERE (state <> '" + JobState.FINISHED.value() + "' AND state <> '" + JobState.FAILED.value() + "') ");
+      query.append(
+          " WHERE (state <> '" + JobState.FINISHED.value() + "' AND state <> '" + JobState.FAILED.value() + "') ");
     } else if (state != null && !state.trim().isEmpty()) {
       query.append(" WHERE state = '" + state + "' ");
     }
@@ -571,6 +572,17 @@ public class JDBCCatalog implements Catalog {
     } finally {
       close(statement, connection);
     }
+  }
+
+  public List<SapsImage> getUserJobTasks(Catalog imageStore, String jobId, String state, String search, Integer page,
+      Integer size, String sortField, String sortOrder, String message) {
+    // TODO
+    return null;
+  }
+
+  public Integer getUserJobTasksCount(Catalog imageStore, String jobId, String state, String search, String message) {
+    // TODO
+    return 0;
   }
 
   @Override
@@ -730,8 +742,7 @@ public class JDBCCatalog implements Catalog {
       String upper_right_latitude,
       String upper_right_longitude,
       Date initDate,
-      Date endDate
-      ) throws CatalogException {
+      Date endDate) throws CatalogException {
 
     PreparedStatement queryStatement = null;
     Connection connection = null;

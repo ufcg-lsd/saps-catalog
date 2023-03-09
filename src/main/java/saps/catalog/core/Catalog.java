@@ -12,6 +12,7 @@ import saps.common.core.model.SapsUser;
 import saps.common.core.model.SapsUserJob;
 import saps.common.core.model.SapsLandsatImage;
 import saps.common.core.model.enums.ImageTaskState;
+import saps.common.core.model.enums.JobState;
 
 public interface Catalog {
 
@@ -147,7 +148,7 @@ public interface Catalog {
   SapsLandsatImage getLandsatImages(String region, Date date) throws CatalogException;
 
   List<SapsImage> getTasksByState(ImageTaskState... tasksStates) throws CatalogException;
-  
+
   List<SapsImage> getJobsByState(JobState... jobStates) throws CatalogException;
 
   SapsImage getTaskById(String taskId) throws CatalogException, TaskNotFoundException;
@@ -169,7 +170,7 @@ public interface Catalog {
       String preprocessingTag,
       String processingTag)
       throws CatalogException;
-  
+
   List<SapsUserJob> filterJobs(
       JobState state,
       String lower_left_latitude,
@@ -177,8 +178,7 @@ public interface Catalog {
       String upper_right_latitude,
       String upper_right_longitude,
       Date initDate,
-      Date endDate
-      ) throws CatalogException {
+      Date endDate) throws CatalogException;
 
   List<SapsImage> getTasksByJob(String jobId, String search, Integer page, Integer size,
       String sortField, String sortOrder)
@@ -215,5 +215,21 @@ public interface Catalog {
       String sortOrder,
       boolean withoutTasks,
       boolean allOngoingJobs)
+      throws CatalogException;
+
+  List<SapsImage> getUserJobTasks(
+      String jobId,
+      String state,
+      String search,
+      Integer page,
+      Integer size,
+      String sortField,
+      String sortOrder)
+      throws CatalogException;
+
+  Integer getUserJobTasksCount(
+      String jobId,
+      String state,
+      String search)
       throws CatalogException;
 }

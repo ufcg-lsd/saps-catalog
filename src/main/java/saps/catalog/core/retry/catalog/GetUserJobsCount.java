@@ -1,7 +1,6 @@
-package saps.catalog.core.retry;
+package saps.catalog.core.retry.catalog;
 
 import saps.catalog.core.Catalog;
-import saps.catalog.core.retry.catalog.CatalogRetry;
 
 public class GetUserJobsCount implements CatalogRetry<Integer> {
   private Catalog imageStore;

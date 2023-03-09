@@ -19,7 +19,9 @@ import saps.catalog.core.retry.catalog.GetProcessingTasksRetry;
 import saps.catalog.core.retry.catalog.GetTaskById;
 import saps.catalog.core.retry.catalog.GetTasksRetry;
 import saps.catalog.core.retry.catalog.GetUser;
+import saps.catalog.core.retry.catalog.GetUserJobTasks;
 import saps.catalog.core.retry.catalog.GetUserJobs;
+import saps.catalog.core.retry.catalog.GetUserJobsCount;
 import saps.catalog.core.retry.catalog.UpdateTaskRetry;
 import saps.catalog.core.retry.catalog.exceptions.CatalogRetryException;
 
@@ -324,7 +326,7 @@ public class CatalogUtils {
     return retry(new GetAllTasks(imageStore), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 
-  /** 
+  /**
    * This functions gets all jobs from catalog.
    * 
    * @param imageStore catalog component
@@ -338,7 +340,9 @@ public class CatalogUtils {
    */
   public static List<SapsUserJob> getUserJobs(Catalog imageStore, String state, String search, Integer page,
       Integer size, String sortField, String sortOrder, boolean withoutTasks, boolean allOngoingJobs, String message) {
-    return retry(new GetUserJobs(imageStore, state, search, page, size, sortField, sortOrder, withoutTasks, allOngoingJobs), CATALOG_DEFAULT_SLEEP_SECONDS,
+    return retry(
+        new GetUserJobs(imageStore, state, search, page, size, sortField, sortOrder, withoutTasks, allOngoingJobs),
+        CATALOG_DEFAULT_SLEEP_SECONDS,
         message);
   }
 
@@ -350,8 +354,18 @@ public class CatalogUtils {
    * @param message    information message
    * @return SAPS image list
    */
-  public static Integer getUserJobsCount(Catalog imageStore, String state, String search, boolean allOngoingJobs, String message) {
-    return retry(new GetUserJobsCount(imageStore, state, search, allOngoingJobs), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  public static Integer getUserJobsCount(Catalog imageStore, String state, String search, boolean allOngoingJobs,
+      String message) {
+    return retry(new GetUserJobsCount(imageStore, state, search, allOngoingJobs), CATALOG_DEFAULT_SLEEP_SECONDS,
+        message);
   }
 
+  public List<SapsImage> getUserJobTasks(Catalog imageStore, String jobId, String state, String search, Integer page,
+      Integer size, String sortField, String sortOrder, String message) {
+    return retry(new GetUserJobTasks(imageStore, jobId, state, search, page, size, sortField, sortOrder), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  }
+
+  public Integer getUserJobTasksCount(Catalog imageStore, String jobId, String state, String search, String message) {
+    return retry(new GetUserJobTasksCount(imageStore, jobId, state, search), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  }
 }
