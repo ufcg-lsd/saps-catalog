@@ -8,8 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -215,6 +213,7 @@ public class JDBCCatalog implements Catalog {
 
       String[] arr = userJob.getTaskIds().toArray(new String[userJob.getTaskIds().size()]);
       Array taskIdsArr = connection.createArrayOf("text", arr);
+
       insertStatement.setString(1, userJob.getJobId());
       insertStatement.setString(2, userJob.getLowerLeftLatitude());
       insertStatement.setString(3, userJob.getLowerLeftLongitude());
@@ -239,34 +238,31 @@ public class JDBCCatalog implements Catalog {
     return userJob;
   }
 
-  // @Override
-  // public void updateUserJob(SapsUserJob userJob) throws CatalogException {
+  @Override
+  public void updateUserJob(SapsUserJob userJob) throws CatalogException {
 
-  // if (userJob == null) {
-  // LOGGER.error("Trying to update empty job.");
-  // throw new IllegalArgumentException("Trying to update null user job")
-  // }
+  if (userJob == null) {
+    LOGGER.error("Trying to update empty job.");
+    throw new IllegalArgumentException("Trying to update null user job");
+  }
 
-  // PreparedStatement updateStatement = null;
-  // Connection connection = null;
+  Connection connection = null;
+  PreparedStatement updateStatement = null;
+  try {
+      connection = getConnection();
 
-  // try {
-  // Connection = getConnection();
+      updateStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Update.JOB);
+      updateStatement.setString(1, userJob.getState().value());
+      updateStatement.setString(2, userJob.getJobId());
+      updateStatement.setQueryTimeout(300);
 
-  // updateStatement =
-  // connection.prepareStatement(JDBCCatalogConstants.Queries.Update.Job);
-  // updateStatement.setString(1, userJob.getState().getValue());
-  // updateStatement.setString(2, userJob.getJobId());
-  // updateStatement.setQueryTimeout(300);
-
-  // uppdateStatement.execute();
-  // catch (SQLException e) {
-  // throw new CatalogException("Error while try to update job");
-  // } finally {
-  // close(updateStatement, connection);
-  // }
-  // }
-  // }
+      updateStatement.execute();
+    } catch (SQLException e) {
+      throw new CatalogException("Error while try to update job");
+    } finally {
+      close(updateStatement, connection);
+    }
+  }
 
   @Override
   public SapsImage addTask(
@@ -486,12 +482,20 @@ public class JDBCCatalog implements Catalog {
     }
   }
 
-  private String buildJobsWithPaginationQuery(String search, Integer page, Integer size, String sortField,
-      String sortOrder) {
+  private String buildJobsQuery(String state, String search, Integer page, Integer size, String sortField,
+      String sortOrder, boolean allOngoingJobs) {
+
     StringBuilder query = new StringBuilder("SELECT * FROM " + JDBCCatalogConstants.TablesName.JOBS);
 
-    if (search != null && !search.trim().isEmpty())
-      query.append(" WHERE to_char(creation_time, 'YYYY-MM-DD') LIKE '" + search + "%' ");
+    if (search != null && !search.trim().isEmpty()) {
+      query.append(" WHERE job_label LIKE '" + search + "%' ");
+    } else if (allOngoingJobs) {
+      query.append(
+          " WHERE (state <> '" + JobState.FINISHED.value() + "' AND state <> '" + JobState.FAILED.value() + "') ");
+    } else if (state != null && !state.trim().isEmpty()) {
+      query.append(" WHERE state = '" + state + "' ");
+    }
+
     if (sortField != null && sortOrder != null && !sortField.trim().isEmpty() && !sortOrder.trim().isEmpty())
       query.append(" ORDER BY " + sortField + " " + sortOrder.toUpperCase());
     if (page > 0 && size > 0)
@@ -501,10 +505,18 @@ public class JDBCCatalog implements Catalog {
   }
 
   @Override
-  public List<SapsUserJob> getUserJobs(Catalog imageStore, String search, Integer page, Integer size, String sortField,
-      String sortOrder, boolean withoutTasks, String message) throws CatalogException {
+  public List<SapsUserJob> getUserJobs(
+      String state,
+      String search,
+      Integer page,
+      Integer size,
+      String sortField,
+      String sortOrder,
+      boolean withoutTasks,
+      boolean allOngoingJobs)
+      throws CatalogException {
 
-    String query = buildJobsWithPaginationQuery(search, page, size, sortField, sortOrder);
+    String query = buildJobsQuery(state, search, page, size, sortField, sortOrder, allOngoingJobs);
 
     Statement statement = null;
     Connection conn = null;
@@ -516,13 +528,48 @@ public class JDBCCatalog implements Catalog {
 
       statement.execute(query);
       ResultSet rs = statement.getResultSet();
-      return JDBCCatalogUtil.extractSapsUserJobs(rs);
+      return JDBCCatalogUtil.extractSapsUserJob(rs, withoutTasks);
     } catch (SQLException e) {
       throw new CatalogException("Error while extract all jobs");
     } catch (JDBCCatalogException e) {
       throw new CatalogException("Error while extract all tasks");
     } finally {
       close(statement, conn);
+    }
+  }
+
+  private String buildUserJobsCountQuery(String state, String search, boolean allOngoingJobs) {
+    StringBuilder query = new StringBuilder("SELECT COUNT(*) FROM " + JDBCCatalogConstants.TablesName.JOBS);
+
+    if (search != null && !search.trim().isEmpty()) {
+      query.append(" WHERE job_label LIKE '" + search + "%' ");
+    } else if (allOngoingJobs) {
+      query.append(" WHERE (state <> '" + JobState.FINISHED.value() + "' AND state <> '" + JobState.FAILED.value() + "') ");
+    } else if (state != null && !state.trim().isEmpty()) {
+      query.append(" WHERE state = '" + state + "' ");
+    }
+
+    return query.toString();
+  }
+
+  @Override
+  public Integer getUserJobsCount(String state, String search, boolean allOngoingJobs) throws CatalogException {
+    Statement statement = null;
+    Connection connection = null;
+    try {
+      String query = buildUserJobsCountQuery(state, search, allOngoingJobs);
+      connection = getConnection();
+      statement = connection.createStatement();
+      statement.setQueryTimeout(300);
+      statement.execute(query);
+
+      ResultSet rs = statement.getResultSet();
+      rs.next();
+      return rs.getInt("count");
+    } catch (SQLException e) {
+      throw new CatalogException("Error while select all tasks");
+    } finally {
+      close(statement, connection);
     }
   }
 
@@ -762,5 +809,12 @@ public class JDBCCatalog implements Catalog {
     } finally {
       close(queryStatement, connection);
     }
+  }
+
+  @Override
+  public List<SapsImage> getTasksByJob(String jobId, String search, Integer page, Integer size, String sortField,
+      String sortOrder) throws CatalogException {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getTasksByJob'");
   }
 }

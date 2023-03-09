@@ -133,25 +133,9 @@ public interface Catalog {
       boolean adminRole)
       throws CatalogException;
 
-  SapsUserJob addJob(
-      String jobId,
-      String lowerLeftLatitude,
-      String lowerLeftLongitude,
-      String upperRightLatitude,
-      String upperRightLongitude,
-      String userEmail,
-      String jobLabel,
-      Date startDate,
-      Date endDate,
-      int priority,
-      List<String> taskIds)
-      throws CatalogException;
-
   // FIXME: i think we should throw an exception when there is no imageTask in the
   // Catalog
   void updateImageTask(SapsImage imageTask) throws CatalogException;
-
-  void updateUserJob(SapsUserJob userJob) throws CatalogException;
 
   // FIXME: we should explain we return an empty list in some cases
   /**
@@ -188,10 +172,26 @@ public interface Catalog {
       String sortField, String sortOrder)
       throws CatalogException;
 
+  SapsUserJob addJob(
+      String jobId,
+      String lowerLeftLatitude,
+      String lowerLeftLongitude,
+      String upperRightLatitude,
+      String upperRightLongitude,
+      String userEmail,
+      String jobLabel,
+      Date startDate,
+      Date endDate,
+      int priority,
+      List<String> taskIds)
+      throws CatalogException;
+
+  void updateUserJob(SapsUserJob userJob) throws CatalogException;
+
   Integer getUserJobsCount(
-      Catalog imageStore,
+      String state,
       String search,
-      String message)
+      boolean allOngoingJobs)
       throws CatalogException;
 
   List<SapsUserJob> getUserJobs(
@@ -201,6 +201,7 @@ public interface Catalog {
       Integer size,
       String sortField,
       String sortOrder,
-      boolean withoutTasks)
+      boolean withoutTasks,
+      boolean allOngoingJobs)
       throws CatalogException;
 }
