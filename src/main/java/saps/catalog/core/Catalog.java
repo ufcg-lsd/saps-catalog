@@ -147,6 +147,8 @@ public interface Catalog {
   SapsLandsatImage getLandsatImages(String region, Date date) throws CatalogException;
 
   List<SapsImage> getTasksByState(ImageTaskState... tasksStates) throws CatalogException;
+  
+  List<SapsImage> getJobsByState(JobState... jobStates) throws CatalogException;
 
   SapsImage getTaskById(String taskId) throws CatalogException, TaskNotFoundException;
 
@@ -167,6 +169,16 @@ public interface Catalog {
       String preprocessingTag,
       String processingTag)
       throws CatalogException;
+  
+  List<SapsUserJob> filterJobs(
+      JobState state,
+      String lower_left_latitude,
+      String lower_left_longitude,
+      String upper_right_latitude,
+      String upper_right_longitude,
+      Date initDate,
+      Date endDate
+      ) throws CatalogException {
 
   List<SapsImage> getTasksByJob(String jobId, String search, Integer page, Integer size,
       String sortField, String sortOrder)

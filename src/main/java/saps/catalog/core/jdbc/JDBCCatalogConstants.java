@@ -161,6 +161,11 @@ public class JDBCCatalogConstants {
 
       public static final String JOBS = "SELECT * FROM " + JDBCCatalogConstants.TablesName.JOBS;
 
+      public static final String JOBS_BY_STATE = "SELECT * FROM " + JDBCCatalogConstants.TablesName.JOBS 
+      + " WHERE "
+      + JDBCCatalogConstants.Tables.Job.STATE
+      + " = ?";
+
       public static final String TASKS_BY_JOB = "SELECT tasks_ids FROM "
           + JDBCCatalogConstants.TablesName.JOBS
           + " WHERE "
@@ -207,6 +212,24 @@ public class JDBCCatalogConstants {
           + JDBCCatalogConstants.Tables.Task.Algorithms.Inputdownloading.TAG
           + " = ? AND "
           + JDBCCatalogConstants.Tables.Task.Algorithms.Processing.TAG
+          + " = ?";
+      
+      public static final String FILTER_JOBS= "SELECT * FROM "
+          + JDBCCatalogConstants.TablesName.JOBS
+          + " WHERE "
+          + JDBCCatalogConstants.Tables.Job.STATE
+          + " = ? AND "
+          + JDBCCatalogConstants.Tables.Job.LOWER_LEFT_LATITUDE
+          + " = ? AND "
+          + JDBCCatalogConstants.Tables.Job.LOWER_LEFT_LONGITUDE
+          + " = ? AND "
+          + JDBCCatalogConstants.Tables.Job.UPPER_RIGHT_LATITUDE
+          + " = ? AND "
+          + JDBCCatalogConstants.Tables.Job.UPPER_RIGHT_LONGITUDE
+          + " = ? AND "
+          + JDBCCatalogConstants.Tables.Job.START_DATE
+          + " = ? AND "
+          + JDBCCatalogConstants.Tables.Job.END_DATE
           + " = ?";
 
       public static final String FILTER_TASKS_BY_DATE = "SELECT * FROM "

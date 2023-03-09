@@ -658,6 +658,7 @@ public class JDBCCatalog implements Catalog {
       LOGGER.error("A state must be given");
       throw new IllegalArgumentException("Can't recover tasks. State was null.");
     }
+
     PreparedStatement selectStatement = null;
     Connection connection = null;
     try {
@@ -686,8 +687,94 @@ public class JDBCCatalog implements Catalog {
     }
   }
 
+  @Override
+  public List<SapsUserJob> getAllJobsByState(JobState jobState) throws CatalogException {
+    if (jobState == null) {
+      LOGGER.error("A state must be given");
+      throw new IllegalArgumentException("Can't recover jobs. State was null.");
+    }
+
+    PreparedStatement selectStatement = null;
+    Connection connection = null;
+    try {
+      connection = getConnection();
+
+      String query = buildJobByStateQuery(jobState.length);
+      selectStatement = connection.prepareStatement(query);
+      selectStatement.setQueryTimeout(300);
+
+      for (int i = 0; i < jobStates.length; i++) {
+        selectStatement.setString(i + 1, jobStates[i].getValue());
+      }
+
+      selectStatement.execute();
+
+      ResultSet rs = selectStatement.getResultSet();
+      List<SapsUserJob> userJobs = JDBCCatalogUtil.extractSapsUserJobs(rs);
+      rs.close();
+      return userJobs;
+    } catch (SQLException e) {
+      throw new CatalogException("Error while getting jobs by state");
+    } catch (JDBCCatalogException e) {
+      throw new CatalogException("Error while extract all jobs");
+    } finally {
+      close(selectStatement, connection);
+    }
+  }
+
+  @Override
+  public List<SapsUserJob> filterJobs(
+      JobState state,
+      String lower_left_latitude,
+      String lower_left_longitude,
+      String upper_right_latitude,
+      String upper_right_longitude,
+      Date initDate,
+      Date endDate
+      ) throws CatalogException {
+
+    PreparedStatement queryStatement = null;
+    Connection connection = null;
+
+    try {
+      connection = getConnection();
+
+      queryStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.FILTER_JOBS);
+      queryStatement.setString(1, state.getValue());
+      queryStatement.setString(2, lower_left_latitude);
+      queryStatement.setString(3, lower_left_longitude);
+      queryStatement.setString(4, upper_right_latitude);
+      queryStatement.setString(5, upper_right_longitude);
+      queryStatement.setDate(6, javaDateToSqlDate(initDate));
+      queryStatement.setDate(7, javaDateToSqlDate(endDate));
+      queryStatement.setQueryTimeout(300);
+
+      ResultSet result = queryStatement.executeQuery();
+      return JDBCCatalogUtil.extractSapsUserJobs(result);
+    } catch (SQLException e) {
+      throw new CatalogException("Error while getting jobs by filters");
+    } catch (JDBCCatalogException e) {
+      throw new CatalogException("Error while extract all jobs");
+    } finally {
+      close(queryStatement, connection);
+    }
+  }
+
   private String buildTaskByStateQuery(int states) {
     StringBuilder query = new StringBuilder(JDBCCatalogConstants.Queries.Select.TASKS + " WHERE state in (");
+    for (int i = 0; i < states; i++) {
+      if (i == states - 1) {
+        query.append("?) ");
+      } else {
+        query.append("?,");
+      }
+    }
+    query.append("ORDER BY priority asc");
+    return query.toString();
+  }
+
+  private String buildJobsByStateQuery(int states) {
+    StringBuilder query = new StringBuilder(JDBCCatalogConstants.Queries.Select.JOBS + " WHERE state in (");
     for (int i = 0; i < states; i++) {
       if (i == states - 1) {
         query.append("?) ");
