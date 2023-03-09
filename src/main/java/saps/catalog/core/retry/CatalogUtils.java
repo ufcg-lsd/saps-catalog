@@ -360,12 +360,12 @@ public class CatalogUtils {
         message);
   }
 
-  public List<SapsImage> getUserJobTasks(Catalog imageStore, String jobId, String state, String search, Integer page,
+  public static List<SapsImage> getUserJobTasks(Catalog imageStore, String jobId, String state, String search, Integer page,
       Integer size, String sortField, String sortOrder, String message) {
     return retry(new GetUserJobTasks(imageStore, jobId, state, search, page, size, sortField, sortOrder), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 
-  public Integer getUserJobTasksCount(Catalog imageStore, String jobId, String state, String search, String message) {
+  public static Integer getUserJobTasksCount(Catalog imageStore, String jobId, String state, String search, String message) {
     return retry(new GetUserJobTasksCount(imageStore, jobId, state, search), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 }

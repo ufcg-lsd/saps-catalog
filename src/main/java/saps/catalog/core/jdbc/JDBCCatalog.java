@@ -154,6 +154,468 @@ public class JDBCCatalog implements Catalog {
     return new java.sql.Date(date.getTime());
   }
 
+  // == Users
+  @Override
+  public void addUser(
+      String userEmail,
+      String userName,
+      String userPass,
+      boolean isEnable,
+      boolean userNotify,
+      boolean adminRole)
+      throws CatalogException {
+
+    LOGGER.info("Adding user " + userName + " into DB");
+    if (userName == null || userName.isEmpty() || userPass == null || userPass.isEmpty()) {
+      throw new IllegalArgumentException("Unable to create user with empty name or password.");
+    }
+
+    PreparedStatement insertStatement = null;
+    Connection connection = null;
+
+    try {
+      connection = getConnection();
+
+      insertStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Insert.USER);
+      insertStatement.setString(1, userEmail);
+      insertStatement.setString(2, userName);
+      insertStatement.setString(3, userPass);
+      insertStatement.setBoolean(4, isEnable);
+      insertStatement.setBoolean(5, userNotify);
+      insertStatement.setBoolean(6, adminRole);
+      insertStatement.setQueryTimeout(300);
+
+      insertStatement.execute();
+    } catch (SQLException e) {
+      throw new CatalogException("Error while try add a new user");
+    } finally {
+      close(insertStatement, connection);
+    }
+  }
+
+  @Override
+  public SapsUser getUserByEmail(String userEmail) throws CatalogException, UserNotFoundException {
+
+    if (userEmail == null || userEmail.isEmpty()) {
+      LOGGER.error("Invalid userEmail " + userEmail);
+      return null;
+    }
+    PreparedStatement selectStatement = null;
+    Connection connection = null;
+
+    try {
+      connection = getConnection();
+
+      selectStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.USER);
+      selectStatement.setString(1, userEmail);
+      selectStatement.setQueryTimeout(300);
+
+      selectStatement.execute();
+
+      ResultSet rs = selectStatement.getResultSet();
+      if (rs.next()) {
+        SapsUser sebalUser = JDBCCatalogUtil.extractSapsUser(rs);
+        return sebalUser;
+      }
+      rs.close();
+      throw new UserNotFoundException("There is no user with email");
+    } catch (SQLException e) {
+      throw new CatalogException("Error while getting user by email");
+    } catch (JDBCCatalogException e) {
+      throw new CatalogException("Error while extract user");
+    } finally {
+      close(selectStatement, connection);
+    }
+  }
+
+  // == Tasks
+  @Override
+  public SapsImage addTask(
+      String taskId,
+      String dataset,
+      String region,
+      Date date,
+      int priority,
+      String user,
+      String inputdownloadingPhaseTag,
+      String digestInputdownloading,
+      String preprocessingPhaseTag,
+      String digestPreprocessing,
+      String processingPhaseTag,
+      String digestProcessing)
+      throws CatalogException {
+    Timestamp now = new Timestamp(System.currentTimeMillis());
+    SapsImage task = new SapsImage(
+        taskId,
+        dataset,
+        region,
+        date,
+        ImageTaskState.CREATED,
+        SapsImage.NONE_ARREBOL_JOB_ID,
+        SapsImage.NONE_FEDERATION_MEMBER,
+        priority,
+        user,
+        inputdownloadingPhaseTag,
+        digestInputdownloading,
+        preprocessingPhaseTag,
+        digestPreprocessing,
+        processingPhaseTag,
+        digestProcessing,
+        now,
+        now,
+        SapsImage.AVAILABLE,
+        SapsImage.NON_EXISTENT_DATA);
+
+    if (task.getTaskId() == null || task.getTaskId().isEmpty()) {
+      LOGGER.error("Task with empty id.");
+      throw new IllegalArgumentException("Task with empty id.");
+    }
+    if (task.getDataset() == null || task.getDataset().isEmpty()) {
+      LOGGER.error("Task with empty dataset.");
+      throw new IllegalArgumentException("Task with empty dataset.");
+    }
+    if (task.getImageDate() == null) {
+      LOGGER.error("Task must have a date.");
+      throw new IllegalArgumentException("Task must have a date.");
+    }
+    if (task.getUser() == null || task.getUser().isEmpty()) {
+      LOGGER.error("Task must have a user.");
+      throw new IllegalArgumentException("Task must have a user.");
+    }
+
+    LOGGER.info("Adding image task " + task.getTaskId() + " with priority " + task.getPriority());
+    LOGGER.info(task.toString());
+
+    PreparedStatement insertStatement = null;
+    Connection connection = null;
+
+    try {
+      connection = getConnection();
+
+      insertStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Insert.TASK);
+      insertStatement.setString(1, task.getTaskId());
+      insertStatement.setString(2, task.getDataset());
+      insertStatement.setString(3, task.getRegion());
+      insertStatement.setDate(4, javaDateToSqlDate(task.getImageDate()));
+      insertStatement.setString(5, task.getState().getValue());
+      insertStatement.setString(6, task.getArrebolJobId());
+      insertStatement.setString(7, task.getFederationMember());
+      insertStatement.setInt(8, task.getPriority());
+      insertStatement.setString(9, task.getUser());
+      insertStatement.setString(10, task.getInputdownloadingTag());
+      insertStatement.setString(11, task.getDigestInputdownloading());
+      insertStatement.setString(12, task.getPreprocessingTag());
+      insertStatement.setString(13, task.getDigestPreprocessing());
+      insertStatement.setString(14, task.getProcessingTag());
+      insertStatement.setString(15, task.getDigestProcessing());
+      insertStatement.setTimestamp(16, task.getCreationTime());
+      insertStatement.setTimestamp(17, task.getUpdateTime());
+      insertStatement.setString(18, task.getStatus());
+      insertStatement.setString(19, task.getError());
+      insertStatement.setQueryTimeout(300);
+
+      insertStatement.execute();
+    } catch (SQLException e) {
+      throw new CatalogException("Error while insert a new task");
+    } finally {
+      close(insertStatement, connection);
+    }
+
+    return task;
+  }
+
+  @Override
+  public void updateImageTask(SapsImage imagetask) throws CatalogException {
+    if (imagetask == null) {
+      LOGGER.error("Trying to update null image task.");
+      throw new IllegalArgumentException("Trying to update null image task.");
+    }
+
+    PreparedStatement updateStatement = null;
+    Connection connection = null;
+
+    try {
+      connection = getConnection();
+
+      updateStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Update.TASK);
+      updateStatement.setString(1, imagetask.getState().getValue());
+      updateStatement.setString(2, imagetask.getStatus());
+      updateStatement.setString(3, imagetask.getError());
+      updateStatement.setString(4, imagetask.getArrebolJobId());
+      updateStatement.setString(5, imagetask.getTaskId());
+      updateStatement.setQueryTimeout(300);
+
+      updateStatement.execute();
+    } catch (SQLException e) {
+      throw new CatalogException("Error while try updates task");
+    } finally {
+      close(updateStatement, connection);
+    }
+  }
+
+  @Override
+  public List<SapsImage> getAllTasks() throws CatalogException {
+    Statement statement = null;
+    Connection conn = null;
+    try {
+      conn = getConnection();
+      statement = conn.createStatement();
+      statement.setQueryTimeout(300);
+
+      statement.execute(JDBCCatalogConstants.Queries.Select.TASKS);
+      ResultSet rs = statement.getResultSet();
+      return JDBCCatalogUtil.extractSapsTasks(rs);
+    } catch (SQLException e) {
+      throw new CatalogException("Error while select all tasks");
+    } catch (JDBCCatalogException e) {
+      throw new CatalogException("Error while extract all tasks");
+    } finally {
+      close(statement, conn);
+    }
+  }
+
+  private String buildTaskByStateQuery(int states) {
+    StringBuilder query = new StringBuilder(JDBCCatalogConstants.Queries.Select.TASKS + " WHERE state in (");
+    for (int i = 0; i < states; i++) {
+      if (i == states - 1) {
+        query.append("?) ");
+      } else {
+        query.append("?,");
+      }
+    }
+    query.append("ORDER BY priority asc");
+    return query.toString();
+  }
+
+  @Override
+  public List<SapsImage> getTasksByState(ImageTaskState... tasksStates) throws CatalogException {
+    if (tasksStates == null) {
+      LOGGER.error("A state must be given");
+      throw new IllegalArgumentException("Can't recover tasks. State was null.");
+    }
+
+    PreparedStatement selectStatement = null;
+    Connection connection = null;
+    try {
+      connection = getConnection();
+
+      String query = buildTaskByStateQuery(tasksStates.length);
+      selectStatement = connection.prepareStatement(query);
+      selectStatement.setQueryTimeout(300);
+
+      for (int i = 0; i < tasksStates.length; i++) {
+        selectStatement.setString(i + 1, tasksStates[i].getValue());
+      }
+
+      selectStatement.execute();
+
+      ResultSet rs = selectStatement.getResultSet();
+      List<SapsImage> imageDatas = JDBCCatalogUtil.extractSapsTasks(rs);
+      rs.close();
+      return imageDatas;
+    } catch (SQLException e) {
+      throw new CatalogException("Error while getting task by state");
+    } catch (JDBCCatalogException e) {
+      throw new CatalogException("Error while extract all tasks");
+    } finally {
+      close(selectStatement, connection);
+    }
+  }
+
+  @Override
+  public SapsImage getTaskById(String taskId) throws CatalogException, TaskNotFoundException {
+    if (taskId == null) {
+      LOGGER.error("Null image task");
+      throw new IllegalArgumentException("Invalid image task null");
+    }
+
+    if (taskId.isEmpty()) {
+      LOGGER.error("Invalid image task " + taskId);
+      throw new IllegalArgumentException("Invalid image task " + taskId);
+    }
+
+    PreparedStatement selectStatement = null;
+    Connection connection = null;
+
+    try {
+      connection = getConnection();
+
+      selectStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.TASK);
+      selectStatement.setString(1, taskId);
+      selectStatement.setQueryTimeout(300);
+
+      selectStatement.execute();
+
+      ResultSet rs = selectStatement.getResultSet();
+      List<SapsImage> imageDatas = JDBCCatalogUtil.extractSapsTasks(rs);
+
+      if (imageDatas.size() == 0)
+        throw new TaskNotFoundException("There is no task with id");
+
+      rs.close();
+      return imageDatas.get(0);
+    } catch (SQLException e) {
+      throw new CatalogException("Error while getting task by id");
+    } catch (JDBCCatalogException e) {
+      throw new CatalogException("Error while extract all tasks");
+    } finally {
+      close(selectStatement, connection);
+    }
+  }
+
+  @Override
+  public List<SapsImage> filterTasks(
+      ImageTaskState state,
+      String region,
+      Date initDate,
+      Date endDate,
+      String inputGathering,
+      String preprocessingTag,
+      String processingTag)
+      throws CatalogException {
+    PreparedStatement queryStatement = null;
+    Connection connection = null;
+
+    try {
+      connection = getConnection();
+
+      queryStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.FILTER_TASKS);
+      queryStatement.setString(1, state.getValue());
+      queryStatement.setString(2, region);
+      queryStatement.setDate(3, javaDateToSqlDate(initDate));
+      queryStatement.setDate(4, javaDateToSqlDate(endDate));
+      queryStatement.setString(5, preprocessingTag);
+      queryStatement.setString(6, inputGathering);
+      queryStatement.setString(7, processingTag);
+      queryStatement.setQueryTimeout(300);
+
+      ResultSet result = queryStatement.executeQuery();
+      return JDBCCatalogUtil.extractSapsTasks(result);
+    } catch (SQLException e) {
+      throw new CatalogException("Error while getting tasks by filters");
+    } catch (JDBCCatalogException e) {
+      throw new CatalogException("Error while extract all tasks");
+    } finally {
+      close(queryStatement, connection);
+    }
+  }
+
+  // == Landsat
+  @Override
+  public SapsLandsatImage getLandsatImages(String region, Date date) throws CatalogException {
+
+    if (region == null || region.isEmpty()) {
+      LOGGER.error("Invalid region " + region);
+      throw new IllegalArgumentException("Region is missing");
+    }
+
+    if (date == null) {
+      LOGGER.error("Invalid date " + date);
+      throw new NullPointerException("Invalid date (null)");
+    }
+
+    PreparedStatement statement = null;
+    Connection connection = null;
+
+    java.sql.Date sqlDate = javaDateToSqlDate(date);
+    String strDate = sqlDate.toString();
+    String regionAndDate = region + strDate.replace("-", "");
+
+    long regionAsLong = Long.parseLong(regionAndDate);
+
+    try {
+      connection = getConnection();
+      statement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.LANDSAT_IMAGES);
+      statement.setLong(1, regionAsLong);
+      statement.setQueryTimeout(300);
+
+      statement.execute();
+
+      ResultSet rs = statement.getResultSet();
+      SapsLandsatImage result = JDBCCatalogUtil.extractSapsImages(rs);
+      rs.close();
+      return result;
+
+    } catch (SQLException e) {
+      throw new CatalogException("Erro while select landsat images", e);
+    } catch (JDBCCatalogException e) {
+      throw new CatalogException("Error while getting landsat images", e);
+    } finally {
+      close(statement, connection);
+    }
+  }
+
+  // == Timestamp
+  @Override
+  public void addStateChangeTime(String taskId, ImageTaskState state, Timestamp timestamp)
+      throws CatalogException {
+    if (taskId == null || taskId.isEmpty() || state == null) {
+      LOGGER.error("Task id or state was null.");
+      throw new IllegalArgumentException("Task id or state was null.");
+    }
+    LOGGER.info(
+        "Adding task "
+            + taskId
+            + " state "
+            + state.getValue()
+            + " with timestamp "
+            + timestamp
+            + " into Catalogue");
+
+    PreparedStatement insertStatement = null;
+    Connection connection = null;
+
+    try {
+      connection = getConnection();
+
+      insertStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Insert.TIMESTAMP);
+      insertStatement.setString(1, taskId);
+      insertStatement.setString(2, state.getValue());
+      insertStatement.setQueryTimeout(300);
+
+      insertStatement.execute();
+    } catch (SQLException e) {
+      throw new CatalogException("Error while add a new state change time");
+    } finally {
+      close(insertStatement, connection);
+    }
+  }
+
+  @Override
+  public void removeStateChangeTime(String taskId, ImageTaskState state, Timestamp timestamp)
+      throws CatalogException {
+
+    if (taskId == null || taskId.isEmpty() || state == null || state.getValue() == null) {
+      if (state != null) {
+        LOGGER.error("Invalid task " + taskId + " or state with value " + state.getValue());
+      }
+      LOGGER.error("Invalid task " + taskId + " or state " + state);
+      throw new IllegalArgumentException("Invalid task " + taskId);
+    }
+
+    LOGGER.info(
+        "Removing task " + taskId + " state " + state.getValue() + " with timestamp " + timestamp);
+    PreparedStatement removeStatement = null;
+    Connection connection = null;
+
+    try {
+      connection = getConnection();
+
+      removeStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Delete.TIMESTAMP);
+      removeStatement.setString(1, taskId);
+      removeStatement.setString(2, state.getValue());
+      removeStatement.setTimestamp(3, timestamp);
+      removeStatement.setQueryTimeout(300);
+
+      removeStatement.execute();
+    } catch (SQLException e) {
+      throw new CatalogException("Error while removes state change time");
+    } finally {
+      close(removeStatement, connection);
+    }
+  }
+
+  // == Jobs
   @Override
   public SapsUserJob addJob(
       String jobId,
@@ -264,225 +726,7 @@ public class JDBCCatalog implements Catalog {
     }
   }
 
-  @Override
-  public SapsImage addTask(
-      String taskId,
-      String dataset,
-      String region,
-      Date date,
-      int priority,
-      String user,
-      String inputdownloadingPhaseTag,
-      String digestInputdownloading,
-      String preprocessingPhaseTag,
-      String digestPreprocessing,
-      String processingPhaseTag,
-      String digestProcessing)
-      throws CatalogException {
-    Timestamp now = new Timestamp(System.currentTimeMillis());
-    SapsImage task = new SapsImage(
-        taskId,
-        dataset,
-        region,
-        date,
-        ImageTaskState.CREATED,
-        SapsImage.NONE_ARREBOL_JOB_ID,
-        SapsImage.NONE_FEDERATION_MEMBER,
-        priority,
-        user,
-        inputdownloadingPhaseTag,
-        digestInputdownloading,
-        preprocessingPhaseTag,
-        digestPreprocessing,
-        processingPhaseTag,
-        digestProcessing,
-        now,
-        now,
-        SapsImage.AVAILABLE,
-        SapsImage.NON_EXISTENT_DATA);
-
-    if (task.getTaskId() == null || task.getTaskId().isEmpty()) {
-      LOGGER.error("Task with empty id.");
-      throw new IllegalArgumentException("Task with empty id.");
-    }
-    if (task.getDataset() == null || task.getDataset().isEmpty()) {
-      LOGGER.error("Task with empty dataset.");
-      throw new IllegalArgumentException("Task with empty dataset.");
-    }
-    if (task.getImageDate() == null) {
-      LOGGER.error("Task must have a date.");
-      throw new IllegalArgumentException("Task must have a date.");
-    }
-    if (task.getUser() == null || task.getUser().isEmpty()) {
-      LOGGER.error("Task must have a user.");
-      throw new IllegalArgumentException("Task must have a user.");
-    }
-
-    LOGGER.info("Adding image task " + task.getTaskId() + " with priority " + task.getPriority());
-    LOGGER.info(task.toString());
-
-    PreparedStatement insertStatement = null;
-    Connection connection = null;
-
-    try {
-      connection = getConnection();
-
-      insertStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Insert.TASK);
-      insertStatement.setString(1, task.getTaskId());
-      insertStatement.setString(2, task.getDataset());
-      insertStatement.setString(3, task.getRegion());
-      insertStatement.setDate(4, javaDateToSqlDate(task.getImageDate()));
-      insertStatement.setString(5, task.getState().getValue());
-      insertStatement.setString(6, task.getArrebolJobId());
-      insertStatement.setString(7, task.getFederationMember());
-      insertStatement.setInt(8, task.getPriority());
-      insertStatement.setString(9, task.getUser());
-      insertStatement.setString(10, task.getInputdownloadingTag());
-      insertStatement.setString(11, task.getDigestInputdownloading());
-      insertStatement.setString(12, task.getPreprocessingTag());
-      insertStatement.setString(13, task.getDigestPreprocessing());
-      insertStatement.setString(14, task.getProcessingTag());
-      insertStatement.setString(15, task.getDigestProcessing());
-      insertStatement.setTimestamp(16, task.getCreationTime());
-      insertStatement.setTimestamp(17, task.getUpdateTime());
-      insertStatement.setString(18, task.getStatus());
-      insertStatement.setString(19, task.getError());
-      insertStatement.setQueryTimeout(300);
-
-      insertStatement.execute();
-    } catch (SQLException e) {
-      throw new CatalogException("Error while insert a new task");
-    } finally {
-      close(insertStatement, connection);
-    }
-
-    return task;
-  }
-
-  @Override
-  public void addStateChangeTime(String taskId, ImageTaskState state, Timestamp timestamp)
-      throws CatalogException {
-    if (taskId == null || taskId.isEmpty() || state == null) {
-      LOGGER.error("Task id or state was null.");
-      throw new IllegalArgumentException("Task id or state was null.");
-    }
-    LOGGER.info(
-        "Adding task "
-            + taskId
-            + " state "
-            + state.getValue()
-            + " with timestamp "
-            + timestamp
-            + " into Catalogue");
-
-    PreparedStatement insertStatement = null;
-    Connection connection = null;
-
-    try {
-      connection = getConnection();
-
-      insertStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Insert.TIMESTAMP);
-      insertStatement.setString(1, taskId);
-      insertStatement.setString(2, state.getValue());
-      insertStatement.setQueryTimeout(300);
-
-      insertStatement.execute();
-    } catch (SQLException e) {
-      throw new CatalogException("Error while add a new state change time");
-    } finally {
-      close(insertStatement, connection);
-    }
-  }
-
-  @Override
-  public void addUser(
-      String userEmail,
-      String userName,
-      String userPass,
-      boolean isEnable,
-      boolean userNotify,
-      boolean adminRole)
-      throws CatalogException {
-
-    LOGGER.info("Adding user " + userName + " into DB");
-    if (userName == null || userName.isEmpty() || userPass == null || userPass.isEmpty()) {
-      throw new IllegalArgumentException("Unable to create user with empty name or password.");
-    }
-
-    PreparedStatement insertStatement = null;
-    Connection connection = null;
-
-    try {
-      connection = getConnection();
-
-      insertStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Insert.USER);
-      insertStatement.setString(1, userEmail);
-      insertStatement.setString(2, userName);
-      insertStatement.setString(3, userPass);
-      insertStatement.setBoolean(4, isEnable);
-      insertStatement.setBoolean(5, userNotify);
-      insertStatement.setBoolean(6, adminRole);
-      insertStatement.setQueryTimeout(300);
-
-      insertStatement.execute();
-    } catch (SQLException e) {
-      throw new CatalogException("Error while try add a new user");
-    } finally {
-      close(insertStatement, connection);
-    }
-  }
-
-  @Override
-  public void updateImageTask(SapsImage imagetask) throws CatalogException {
-    if (imagetask == null) {
-      LOGGER.error("Trying to update null image task.");
-      throw new IllegalArgumentException("Trying to update null image task.");
-    }
-
-    PreparedStatement updateStatement = null;
-    Connection connection = null;
-
-    try {
-      connection = getConnection();
-
-      updateStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Update.TASK);
-      updateStatement.setString(1, imagetask.getState().getValue());
-      updateStatement.setString(2, imagetask.getStatus());
-      updateStatement.setString(3, imagetask.getError());
-      updateStatement.setString(4, imagetask.getArrebolJobId());
-      updateStatement.setString(5, imagetask.getTaskId());
-      updateStatement.setQueryTimeout(300);
-
-      updateStatement.execute();
-    } catch (SQLException e) {
-      throw new CatalogException("Error while try updates task");
-    } finally {
-      close(updateStatement, connection);
-    }
-  }
-
-  @Override
-  public List<SapsImage> getAllTasks() throws CatalogException {
-    Statement statement = null;
-    Connection conn = null;
-    try {
-      conn = getConnection();
-      statement = conn.createStatement();
-      statement.setQueryTimeout(300);
-
-      statement.execute(JDBCCatalogConstants.Queries.Select.TASKS);
-      ResultSet rs = statement.getResultSet();
-      return JDBCCatalogUtil.extractSapsTasks(rs);
-    } catch (SQLException e) {
-      throw new CatalogException("Error while select all tasks");
-    } catch (JDBCCatalogException e) {
-      throw new CatalogException("Error while extract all tasks");
-    } finally {
-      close(statement, conn);
-    }
-  }
-
-  private String buildJobsQuery(String state, String search, Integer page, Integer size, String sortField,
+  private String buildUserJobsQuery(String state, String search, Integer page, Integer size, String sortField,
       String sortOrder, boolean allOngoingJobs) {
 
     StringBuilder query = new StringBuilder("SELECT * FROM " + JDBCCatalogConstants.TablesName.JOBS);
@@ -516,7 +760,7 @@ public class JDBCCatalog implements Catalog {
       boolean allOngoingJobs)
       throws CatalogException {
 
-    String query = buildJobsQuery(state, search, page, size, sortField, sortOrder, allOngoingJobs);
+    String query = buildUserJobsQuery(state, search, page, size, sortField, sortOrder, allOngoingJobs);
 
     Statement statement = null;
     Connection conn = null;
@@ -574,214 +818,104 @@ public class JDBCCatalog implements Catalog {
     }
   }
 
-  public List<SapsImage> getUserJobTasks(Catalog imageStore, String jobId, String state, String search, Integer page,
-      Integer size, String sortField, String sortOrder, String message) {
-    // TODO
-    return null;
-  }
+  // == Jobs tasks
 
-  public Integer getUserJobTasksCount(Catalog imageStore, String jobId, String state, String search, String message) {
-    // TODO
-    return 0;
+  private String buildJobTasksQuery(String jobId, String state, String search, Integer page, Integer size, String sortField,
+      String sortOrder) {
+    StringBuilder query = new StringBuilder("SELECT * FROM  " + JDBCCatalogConstants.TablesName.TASKS +
+        " WHERE task_id = ANY(ARRAY(SELECT tasks_ids FROM " + JDBCCatalogConstants.TablesName.JOBS +
+        " WHERE job_id = '" + jobId + "'))");
+
+    if (search != null && !search.trim().isEmpty())
+      query.append(" AND to_char(image_date, 'YYYY-MM-DD') LIKE '" + search + "%'");
+    if (state != null && !state.trim().isEmpty())
+      query.append(" AND state = '" + state + "'");
+    if (sortField != null && sortOrder != null && !sortField.trim().isEmpty() && !sortOrder.trim().isEmpty())
+      query.append(" ORDER BY " + sortField + " " + sortOrder.toUpperCase());
+    if (page > 0 && size > 0)
+      query.append(" OFFSET " + (page - 1) * size + " ROWS FETCH NEXT " + size + " ROWS ONLY");
+
+    return query.toString();
   }
 
   @Override
-  public SapsLandsatImage getLandsatImages(String region, Date date) throws CatalogException {
-
-    if (region == null || region.isEmpty()) {
-      LOGGER.error("Invalid region " + region);
-      throw new IllegalArgumentException("Region is missing");
+  public List<SapsImage> getUserJobTasks(String jobId, String state, String search, Integer page, Integer size,
+      String sortField, String sortOrder) {
+    if (jobId == null || jobId.isEmpty()) {
+      LOGGER.error("invalid job id " + jobId);
+      throw new IllegalArgumentException("Job id is missing");
     }
 
-    if (date == null) {
-      LOGGER.error("Invalid date " + date);
-      throw new NullPointerException("Invalid date (null)");
-    }
+    String query = buildJobTasksQuery(jobId, state, search, page, size, sortField, sortOrder);
+    LOGGER.info("Query: " + query);
 
-    PreparedStatement statement = null;
+    Statement statement = null;
     Connection connection = null;
-
-    java.sql.Date sqlDate = javaDateToSqlDate(date);
-    String strDate = sqlDate.toString();
-    String regionAndDate = region + strDate.replace("-", "");
-
-    long regionAsLong = Long.parseLong(regionAndDate);
 
     try {
       connection = getConnection();
-      statement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.LANDSAT_IMAGES);
-      statement.setLong(1, regionAsLong);
-      statement.setQueryTimeout(300);
 
-      statement.execute();
+      statement = connection.createStatement();
+      statement.setQueryTimeout(300);
+      statement.execute(query);
 
       ResultSet rs = statement.getResultSet();
-      SapsLandsatImage result = JDBCCatalogUtil.extractSapsImages(rs);
-      rs.close();
-      return result;
-
+      return JDBCCatalogUtil.extractSapsTasks(rs);
     } catch (SQLException e) {
-      throw new CatalogException("Erro while select landsat images", e);
+      throw new CatalogException("Error while extract all tasks");
     } catch (JDBCCatalogException e) {
-      throw new CatalogException("Error while getting landsat images", e);
+      throw new CatalogException("Error while extract all tasks");
     } finally {
       close(statement, connection);
     }
   }
 
-  @Override
-  public SapsUser getUserByEmail(String userEmail) throws CatalogException, UserNotFoundException {
+  private String buildUserJobTasksCountQuery(String jobId, String state, String search) {
+    StringBuilder query = new StringBuilder("SELECT COUNT(*) FROM  " + JDBCCatalogConstants.TablesName.TASKS +
+        " WHERE task_id = ANY(ARRAY(SELECT tasks_ids FROM " + JDBCCatalogConstants.TablesName.JOBS +
+        " WHERE job_id = '" + jobId + "'))");
 
-    if (userEmail == null || userEmail.isEmpty()) {
-      LOGGER.error("Invalid userEmail " + userEmail);
-      return null;
-    }
-    PreparedStatement selectStatement = null;
-    Connection connection = null;
+    if (search != null && !search.trim().isEmpty())
+      query.append(" AND to_char(image_date, 'YYYY-MM-DD') LIKE '" + search + "%'");
+    if (state != null && !state.trim().isEmpty())
+      query.append(" AND state = '" + state + "'");
 
-    try {
-      connection = getConnection();
-
-      selectStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.USER);
-      selectStatement.setString(1, userEmail);
-      selectStatement.setQueryTimeout(300);
-
-      selectStatement.execute();
-
-      ResultSet rs = selectStatement.getResultSet();
-      if (rs.next()) {
-        SapsUser sebalUser = JDBCCatalogUtil.extractSapsUser(rs);
-        return sebalUser;
-      }
-      rs.close();
-      throw new UserNotFoundException("There is no user with email");
-    } catch (SQLException e) {
-      throw new CatalogException("Error while getting user by email");
-    } catch (JDBCCatalogException e) {
-      throw new CatalogException("Error while extract user");
-    } finally {
-      close(selectStatement, connection);
-    }
-  }
-
-  @Override
-  public List<SapsImage> getTasksByState(ImageTaskState... tasksStates) throws CatalogException {
-    if (tasksStates == null) {
-      LOGGER.error("A state must be given");
-      throw new IllegalArgumentException("Can't recover tasks. State was null.");
-    }
-
-    PreparedStatement selectStatement = null;
-    Connection connection = null;
-    try {
-      connection = getConnection();
-
-      String query = buildTaskByStateQuery(tasksStates.length);
-      selectStatement = connection.prepareStatement(query);
-      selectStatement.setQueryTimeout(300);
-
-      for (int i = 0; i < tasksStates.length; i++) {
-        selectStatement.setString(i + 1, tasksStates[i].getValue());
-      }
-
-      selectStatement.execute();
-
-      ResultSet rs = selectStatement.getResultSet();
-      List<SapsImage> imageDatas = JDBCCatalogUtil.extractSapsTasks(rs);
-      rs.close();
-      return imageDatas;
-    } catch (SQLException e) {
-      throw new CatalogException("Error while getting task by state");
-    } catch (JDBCCatalogException e) {
-      throw new CatalogException("Error while extract all tasks");
-    } finally {
-      close(selectStatement, connection);
-    }
-  }
-
-  @Override
-  public List<SapsUserJob> getAllJobsByState(JobState jobState) throws CatalogException {
-    if (jobState == null) {
-      LOGGER.error("A state must be given");
-      throw new IllegalArgumentException("Can't recover jobs. State was null.");
-    }
-
-    PreparedStatement selectStatement = null;
-    Connection connection = null;
-    try {
-      connection = getConnection();
-
-      String query = buildJobByStateQuery(jobState.length);
-      selectStatement = connection.prepareStatement(query);
-      selectStatement.setQueryTimeout(300);
-
-      for (int i = 0; i < jobStates.length; i++) {
-        selectStatement.setString(i + 1, jobStates[i].getValue());
-      }
-
-      selectStatement.execute();
-
-      ResultSet rs = selectStatement.getResultSet();
-      List<SapsUserJob> userJobs = JDBCCatalogUtil.extractSapsUserJobs(rs);
-      rs.close();
-      return userJobs;
-    } catch (SQLException e) {
-      throw new CatalogException("Error while getting jobs by state");
-    } catch (JDBCCatalogException e) {
-      throw new CatalogException("Error while extract all jobs");
-    } finally {
-      close(selectStatement, connection);
-    }
-  }
-
-  @Override
-  public List<SapsUserJob> filterJobs(
-      JobState state,
-      String lower_left_latitude,
-      String lower_left_longitude,
-      String upper_right_latitude,
-      String upper_right_longitude,
-      Date initDate,
-      Date endDate) throws CatalogException {
-
-    PreparedStatement queryStatement = null;
-    Connection connection = null;
-
-    try {
-      connection = getConnection();
-
-      queryStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.FILTER_JOBS);
-      queryStatement.setString(1, state.getValue());
-      queryStatement.setString(2, lower_left_latitude);
-      queryStatement.setString(3, lower_left_longitude);
-      queryStatement.setString(4, upper_right_latitude);
-      queryStatement.setString(5, upper_right_longitude);
-      queryStatement.setDate(6, javaDateToSqlDate(initDate));
-      queryStatement.setDate(7, javaDateToSqlDate(endDate));
-      queryStatement.setQueryTimeout(300);
-
-      ResultSet result = queryStatement.executeQuery();
-      return JDBCCatalogUtil.extractSapsUserJobs(result);
-    } catch (SQLException e) {
-      throw new CatalogException("Error while getting jobs by filters");
-    } catch (JDBCCatalogException e) {
-      throw new CatalogException("Error while extract all jobs");
-    } finally {
-      close(queryStatement, connection);
-    }
-  }
-
-  private String buildTaskByStateQuery(int states) {
-    StringBuilder query = new StringBuilder(JDBCCatalogConstants.Queries.Select.TASKS + " WHERE state in (");
-    for (int i = 0; i < states; i++) {
-      if (i == states - 1) {
-        query.append("?) ");
-      } else {
-        query.append("?,");
-      }
-    }
-    query.append("ORDER BY priority asc");
     return query.toString();
+  }
+
+  @Override
+  public Integer getUserJobTasksCount(String jobId, String state, String search) {
+    Statement statement = null;
+    Connection connection = null;
+    try {
+      String query = buildUserJobTasksCountQuery(jobId, state, search);
+      connection = getConnection();
+      statement = connection.createStatement();
+      statement.setQueryTimeout(300);
+      statement.execute(query);
+
+      ResultSet rs = statement.getResultSet();
+      rs.next();
+      return rs.getInt("count");
+    } catch (SQLException e) {
+      throw new CatalogException("Error while select all tasks");
+    } finally {
+      close(statement, connection);
+    }
+  }
+
+  // == other
+  @Override
+  public List<SapsImage> getJobsByState(JobState... jobStates) throws CatalogException {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getJobsByState'");
+  }
+
+  @Override
+  public List<SapsImage> getTasksByJob(String jobId, String search, Integer page, Integer size, String sortField,
+      String sortOrder) throws CatalogException {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getTasksByJob'");
   }
 
   private String buildJobsByStateQuery(int states) {
@@ -796,123 +930,73 @@ public class JDBCCatalog implements Catalog {
     query.append("ORDER BY priority asc");
     return query.toString();
   }
-
+  
   @Override
-  public SapsImage getTaskById(String taskId) throws CatalogException, TaskNotFoundException {
-    if (taskId == null) {
-      LOGGER.error("Null image task");
-      throw new IllegalArgumentException("Invalid image task null");
-    }
+  public List<SapsUserJob> filterJobs(JobState state, String lower_left_latitude, String lower_left_longitude,
+      String upper_right_latitude, String upper_right_longitude, Date initDate, Date endDate) throws CatalogException {
+    
+      // PreparedStatement queryStatement = null;
+      // Connection connection = null;
+  
+      // try {
+      //   connection = getConnection();
+  
+      //   queryStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.FILTER_JOBS);
+      //   queryStatement.setString(1, state.getValue());
+      //   queryStatement.setString(2, lower_left_latitude);
+      //   queryStatement.setString(3, lower_left_longitude);
+      //   queryStatement.setString(4, upper_right_latitude);
+      //   queryStatement.setString(5, upper_right_longitude);
+      //   queryStatement.setDate(6, javaDateToSqlDate(initDate));
+      //   queryStatement.setDate(7, javaDateToSqlDate(endDate));
+      //   queryStatement.setQueryTimeout(300);
+  
+      //   ResultSet result = queryStatement.executeQuery();
+      //   return JDBCCatalogUtil.extractSapsUserJobs(result);
+      // } catch (SQLException e) {
+      //   throw new CatalogException("Error while getting jobs by filters");
+      // } catch (JDBCCatalogException e) {
+      //   throw new CatalogException("Error while extract all jobs");
+      // } finally {
+      //   close(queryStatement, connection);
+      // }
 
-    if (taskId.isEmpty()) {
-      LOGGER.error("Invalid image task " + taskId);
-      throw new IllegalArgumentException("Invalid image task " + taskId);
-    }
-
-    PreparedStatement selectStatement = null;
-    Connection connection = null;
-
-    try {
-      connection = getConnection();
-
-      selectStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.TASK);
-      selectStatement.setString(1, taskId);
-      selectStatement.setQueryTimeout(300);
-
-      selectStatement.execute();
-
-      ResultSet rs = selectStatement.getResultSet();
-      List<SapsImage> imageDatas = JDBCCatalogUtil.extractSapsTasks(rs);
-
-      if (imageDatas.size() == 0)
-        throw new TaskNotFoundException("There is no task with id");
-
-      rs.close();
-      return imageDatas.get(0);
-    } catch (SQLException e) {
-      throw new CatalogException("Error while getting task by id");
-    } catch (JDBCCatalogException e) {
-      throw new CatalogException("Error while extract all tasks");
-    } finally {
-      close(selectStatement, connection);
-    }
+    throw new UnsupportedOperationException("Unimplemented method 'filterJobs'");
   }
 
-  @Override
-  public void removeStateChangeTime(String taskId, ImageTaskState state, Timestamp timestamp)
-      throws CatalogException {
 
-    if (taskId == null || taskId.isEmpty() || state == null || state.getValue() == null) {
-      if (state != null) {
-        LOGGER.error("Invalid task " + taskId + " or state with value " + state.getValue());
-      }
-      LOGGER.error("Invalid task " + taskId + " or state " + state);
-      throw new IllegalArgumentException("Invalid task " + taskId);
-    }
+  // @Override
+  // public List<SapsUserJob> getAllJobsByState(JobState jobState) throws CatalogException {
+  //   if (jobState == null) {
+  //     LOGGER.error("A state must be given");
+  //     throw new IllegalArgumentException("Can't recover jobs. State was null.");
+  //   }
 
-    LOGGER.info(
-        "Removing task " + taskId + " state " + state.getValue() + " with timestamp " + timestamp);
-    PreparedStatement removeStatement = null;
-    Connection connection = null;
+  //   PreparedStatement selectStatement = null;
+  //   Connection connection = null;
+  //   try {
+  //     connection = getConnection();
 
-    try {
-      connection = getConnection();
+  //     String query = buildJobByStateQuery(jobState.length);
+  //     selectStatement = connection.prepareStatement(query);
+  //     selectStatement.setQueryTimeout(300);
 
-      removeStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Delete.TIMESTAMP);
-      removeStatement.setString(1, taskId);
-      removeStatement.setString(2, state.getValue());
-      removeStatement.setTimestamp(3, timestamp);
-      removeStatement.setQueryTimeout(300);
+  //     for (int i = 0; i < jobStates.length; i++) {
+  //       selectStatement.setString(i + 1, jobStates[i].getValue());
+  //     }
 
-      removeStatement.execute();
-    } catch (SQLException e) {
-      throw new CatalogException("Error while removes state change time");
-    } finally {
-      close(removeStatement, connection);
-    }
-  }
+  //     selectStatement.execute();
 
-  @Override
-  public List<SapsImage> filterTasks(
-      ImageTaskState state,
-      String region,
-      Date initDate,
-      Date endDate,
-      String inputGathering,
-      String preprocessingTag,
-      String processingTag)
-      throws CatalogException {
-    PreparedStatement queryStatement = null;
-    Connection connection = null;
-
-    try {
-      connection = getConnection();
-
-      queryStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Select.FILTER_TASKS);
-      queryStatement.setString(1, state.getValue());
-      queryStatement.setString(2, region);
-      queryStatement.setDate(3, javaDateToSqlDate(initDate));
-      queryStatement.setDate(4, javaDateToSqlDate(endDate));
-      queryStatement.setString(5, preprocessingTag);
-      queryStatement.setString(6, inputGathering);
-      queryStatement.setString(7, processingTag);
-      queryStatement.setQueryTimeout(300);
-
-      ResultSet result = queryStatement.executeQuery();
-      return JDBCCatalogUtil.extractSapsTasks(result);
-    } catch (SQLException e) {
-      throw new CatalogException("Error while getting tasks by filters");
-    } catch (JDBCCatalogException e) {
-      throw new CatalogException("Error while extract all tasks");
-    } finally {
-      close(queryStatement, connection);
-    }
-  }
-
-  @Override
-  public List<SapsImage> getTasksByJob(String jobId, String search, Integer page, Integer size, String sortField,
-      String sortOrder) throws CatalogException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getTasksByJob'");
-  }
+  //     ResultSet rs = selectStatement.getResultSet();
+  //     List<SapsUserJob> userJobs = JDBCCatalogUtil.extractSapsUserJobs(rs);
+  //     rs.close();
+  //     return userJobs;
+  //   } catch (SQLException e) {
+  //     throw new CatalogException("Error while getting jobs by state");
+  //   } catch (JDBCCatalogException e) {
+  //     throw new CatalogException("Error while extract all jobs");
+  //   } finally {
+  //     close(selectStatement, connection);
+  //   }
+  // }
 }
