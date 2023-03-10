@@ -15,6 +15,7 @@ public class GetUserJobTasks implements CatalogRetry<List<SapsImage>> {
   private Integer size;
   private String sortField;
   private String sortOrder;
+  private boolean allOngoingJobs;
 
   public GetUserJobTasks(Catalog imageStore,
     String jobId,
@@ -23,7 +24,8 @@ public class GetUserJobTasks implements CatalogRetry<List<SapsImage>> {
     Integer page,
     Integer size,
     String sortField,
-    String sortOrder
+    String sortOrder,
+    boolean allOngoingJobs
   ) {
     this.imageStore = imageStore;
     this.jobId = jobId;
@@ -33,6 +35,7 @@ public class GetUserJobTasks implements CatalogRetry<List<SapsImage>> {
     this.size = size;
     this.sortField = sortField;
     this.sortOrder = sortOrder;
+    this.allOngoingJobs = allOngoingJobs;
   }
 
   @Override
@@ -44,6 +47,7 @@ public class GetUserJobTasks implements CatalogRetry<List<SapsImage>> {
         page,
         size,
         sortField,
-        sortOrder);
+        sortOrder,
+        allOngoingJobs);
   }
 }

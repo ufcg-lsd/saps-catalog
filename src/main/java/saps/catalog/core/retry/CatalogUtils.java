@@ -23,6 +23,7 @@ import saps.catalog.core.retry.catalog.GetUserJobTasks;
 import saps.catalog.core.retry.catalog.GetUserJobs;
 import saps.catalog.core.retry.catalog.GetUserJobsCount;
 import saps.catalog.core.retry.catalog.UpdateTaskRetry;
+import saps.catalog.core.retry.catalog.UpdateUserJob;
 import saps.catalog.core.retry.catalog.exceptions.CatalogRetryException;
 
 import saps.common.core.model.SapsImage;
@@ -30,6 +31,7 @@ import saps.common.core.model.SapsLandsatImage;
 import saps.common.core.model.SapsUser;
 import saps.common.core.model.SapsUserJob;
 import saps.common.core.model.enums.ImageTaskState;
+import saps.common.core.model.enums.JobState;
 
 public class CatalogUtils {
 
@@ -361,11 +363,16 @@ public class CatalogUtils {
   }
 
   public static List<SapsImage> getUserJobTasks(Catalog imageStore, String jobId, String state, String search, Integer page,
-      Integer size, String sortField, String sortOrder, String message) {
-    return retry(new GetUserJobTasks(imageStore, jobId, state, search, page, size, sortField, sortOrder), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+      Integer size, String sortField, String sortOrder, boolean allOngoingJobs, String message) {
+    return retry(new GetUserJobTasks(imageStore, jobId, state, search, page, size, sortField, sortOrder, allOngoingJobs), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 
-  public static Integer getUserJobTasksCount(Catalog imageStore, String jobId, String state, String search, String message) {
-    return retry(new GetUserJobTasksCount(imageStore, jobId, state, search), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  public static Integer getUserJobTasksCount(Catalog imageStore, String jobId, String state, String search, boolean allOngoingJobs, String message) {
+    return retry(new GetUserJobTasksCount(imageStore, jobId, state, search, allOngoingJobs), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
+
+  public static Boolean updateUserJob(Catalog imageStore, String jobId, JobState state, String message) {
+    return retry(new UpdateUserJob(imageStore, jobId, state), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  }
+ 
 }

@@ -72,6 +72,7 @@ public class JDBCCatalogUtil {
   public static List<SapsUserJob> extractSapsUserJob(ResultSet rs, boolean withoutTasks) throws JDBCCatalogException {
     List<SapsUserJob> userJobs = new ArrayList<SapsUserJob>();
     while (true) {
+
       try {
         if (!rs.next())
           break;

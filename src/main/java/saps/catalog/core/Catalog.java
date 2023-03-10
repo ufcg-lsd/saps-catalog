@@ -198,7 +198,7 @@ public interface Catalog {
       List<String> taskIds)
       throws CatalogException;
 
-  void updateUserJob(SapsUserJob userJob) throws CatalogException;
+  void updateUserJob(String jobId, JobState state) throws CatalogException;
 
   List<SapsUserJob> getUserJobs(
       String state,
@@ -224,12 +224,14 @@ public interface Catalog {
       Integer page,
       Integer size,
       String sortField,
-      String sortOrder)
+      String sortOrder,
+      boolean allOngoingJobs)
       throws CatalogException;
 
   Integer getUserJobTasksCount(
       String jobId,
       String state,
-      String search)
+      String search,
+      boolean allOngoingJobs)
       throws CatalogException;
 }

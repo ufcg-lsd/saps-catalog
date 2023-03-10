@@ -149,7 +149,7 @@ public class JDBCCatalogConstants {
 
       public static final String JOB = "UPDATE "
           + JDBCCatalogConstants.TablesName.JOBS
-          + " SET"
+          + " SET "
           + JDBCCatalogConstants.Tables.Job.STATE
           + " = ? WHERE "
           + JDBCCatalogConstants.Tables.Job.ID
