@@ -4,28 +4,29 @@ import java.util.List;
 
 import saps.catalog.core.Catalog;
 import saps.common.core.model.SapsImage;
+import saps.common.core.model.enums.ImageTaskState;
 
 public class GetUserJobTasks implements CatalogRetry<List<SapsImage>> {
   
   private Catalog imageStore;
   private String jobId;
-  private String state;
+  private ImageTaskState state;
   private String search;
   private Integer page;
   private Integer size;
   private String sortField;
   private String sortOrder;
-  private boolean allOngoingJobs;
+  private boolean recoverOnlyOngoing;
 
   public GetUserJobTasks(Catalog imageStore,
     String jobId,
-    String state,
+    ImageTaskState state,
     String search,
     Integer page,
     Integer size,
     String sortField,
     String sortOrder,
-    boolean allOngoingJobs
+    boolean recoverOnlyOngoing
   ) {
     this.imageStore = imageStore;
     this.jobId = jobId;
@@ -35,7 +36,7 @@ public class GetUserJobTasks implements CatalogRetry<List<SapsImage>> {
     this.size = size;
     this.sortField = sortField;
     this.sortOrder = sortOrder;
-    this.allOngoingJobs = allOngoingJobs;
+    this.recoverOnlyOngoing = recoverOnlyOngoing;
   }
 
   @Override
@@ -48,6 +49,6 @@ public class GetUserJobTasks implements CatalogRetry<List<SapsImage>> {
         size,
         sortField,
         sortOrder,
-        allOngoingJobs);
+        recoverOnlyOngoing);
   }
 }

@@ -161,16 +161,7 @@ public class JDBCCatalogConstants {
 
       public static final String JOBS = "SELECT * FROM " + JDBCCatalogConstants.TablesName.JOBS;
 
-      public static final String JOBS_BY_STATE = "SELECT * FROM " + JDBCCatalogConstants.TablesName.JOBS 
-      + " WHERE "
-      + JDBCCatalogConstants.Tables.Job.STATE
-      + " = ?";
-
-      public static final String TASKS_BY_JOB = "SELECT tasks_ids FROM "
-          + JDBCCatalogConstants.TablesName.JOBS
-          + " WHERE "
-          + JDBCCatalogConstants.Tables.Job.ID
-          + " = ?";
+      public static final String JOBS_COUNT = "SELECT COUNT(*) FROM " + JDBCCatalogConstants.TablesName.JOBS;
 
       public static final String LANDSAT_IMAGES = "SELECT * FROM "
           + JDBCCatalogConstants.TablesName.LANDSAT_IMAGES
@@ -213,8 +204,8 @@ public class JDBCCatalogConstants {
           + " = ? AND "
           + JDBCCatalogConstants.Tables.Task.Algorithms.Processing.TAG
           + " = ?";
-      
-      public static final String FILTER_JOBS= "SELECT * FROM "
+
+      public static final String FILTER_JOBS = "SELECT * FROM "
           + JDBCCatalogConstants.TablesName.JOBS
           + " WHERE "
           + JDBCCatalogConstants.Tables.Job.STATE
@@ -240,21 +231,17 @@ public class JDBCCatalogConstants {
           + " , 'YYYY-MM-DD') "
           + " LIKE ?";
 
-      public static final String TASKS_ONGOING_COUNT = "SELECT COUNT(*) FROM "
+      public static final String JOB_TASKS = "SELECT * FROM  "
           + JDBCCatalogConstants.TablesName.TASKS
-          + " WHERE ("
-          + Tables.Task.STATE
-          + " <> 'archived' AND "
-          + Tables.Task.STATE
-          + " <> 'failed')";
+          + " WHERE task_id = ANY(ARRAY(SELECT tasks_ids FROM "
+          + JDBCCatalogConstants.TablesName.JOBS
+          + " WHERE job_id = '?'))";
 
-      public static final String TASKS_COMPLETED_COUNT = "SELECT COUNT(*) FROM "
+      public static final String JOB_TASKS_COUNT = "SELECT COUNT(*) FROM  "
           + JDBCCatalogConstants.TablesName.TASKS
-          + " WHERE ("
-          + Tables.Task.STATE
-          + " = 'archived' OR "
-          + Tables.Task.STATE
-          + " = 'failed')";
+          + " WHERE task_id = ANY(ARRAY(SELECT tasks_ids FROM "
+          + JDBCCatalogConstants.TablesName.JOBS
+          + " WHERE job_id = '?'))";
     }
 
     public final class Delete {

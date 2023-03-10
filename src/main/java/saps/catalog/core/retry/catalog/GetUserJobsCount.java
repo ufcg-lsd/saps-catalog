@@ -1,22 +1,23 @@
 package saps.catalog.core.retry.catalog;
 
 import saps.catalog.core.Catalog;
+import saps.common.core.model.enums.JobState;
 
 public class GetUserJobsCount implements CatalogRetry<Integer> {
   private Catalog imageStore;
-  private String state;
+  private JobState state;
   private String search;
-  private boolean allOngoingJobs;
+  private boolean recoverOnlyOngoing;
 
-  public GetUserJobsCount(Catalog imageStore, String state, String search, boolean allOngoingJobs) {
+  public GetUserJobsCount(Catalog imageStore, JobState state, String search, boolean recoverOnlyOngoing) {
     this.imageStore = imageStore;
     this.state = state;
     this.search = search;
-    this.allOngoingJobs = allOngoingJobs;
+    this.recoverOnlyOngoing = recoverOnlyOngoing;
   }
 
   @Override
   public Integer run() {
-    return imageStore.getUserJobsCount(state, search, allOngoingJobs);
+    return imageStore.getUserJobsCount(state, search, recoverOnlyOngoing);
   }
 }

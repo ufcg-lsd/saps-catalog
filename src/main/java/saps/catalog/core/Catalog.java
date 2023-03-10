@@ -149,8 +149,6 @@ public interface Catalog {
 
   List<SapsImage> getTasksByState(ImageTaskState... tasksStates) throws CatalogException;
 
-  List<SapsImage> getJobsByState(JobState... jobStates) throws CatalogException;
-
   SapsImage getTaskById(String taskId) throws CatalogException, TaskNotFoundException;
 
   // FIXME: what if the userEmail is null? empty string? (doc it)
@@ -171,19 +169,6 @@ public interface Catalog {
       String processingTag)
       throws CatalogException;
 
-  List<SapsUserJob> filterJobs(
-      JobState state,
-      String lower_left_latitude,
-      String lower_left_longitude,
-      String upper_right_latitude,
-      String upper_right_longitude,
-      Date initDate,
-      Date endDate) throws CatalogException;
-
-  List<SapsImage> getTasksByJob(String jobId, String search, Integer page, Integer size,
-      String sortField, String sortOrder)
-      throws CatalogException;
-
   SapsUserJob addJob(
       String jobId,
       String lowerLeftLatitude,
@@ -201,37 +186,37 @@ public interface Catalog {
   void updateUserJob(String jobId, JobState state) throws CatalogException;
 
   List<SapsUserJob> getUserJobs(
-      String state,
+      JobState state,
       String search,
       Integer page,
       Integer size,
       String sortField,
       String sortOrder,
       boolean withoutTasks,
-      boolean allOngoingJobs)
+      boolean recoverOnlyOngoing)
       throws CatalogException;
 
   Integer getUserJobsCount(
-      String state,
+      JobState state,
       String search,
-      boolean allOngoingJobs)
+      boolean recoverOnlyOngoing)
       throws CatalogException;
 
   List<SapsImage> getUserJobTasks(
       String jobId,
-      String state,
+      ImageTaskState state,
       String search,
       Integer page,
       Integer size,
       String sortField,
       String sortOrder,
-      boolean allOngoingJobs)
+      boolean recoverOnlyOngoing)
       throws CatalogException;
 
   Integer getUserJobTasksCount(
       String jobId,
-      String state,
+      ImageTaskState state,
       String search,
-      boolean allOngoingJobs)
+      boolean recoverOnlyOngoing)
       throws CatalogException;
 }

@@ -20,6 +20,7 @@ import saps.catalog.core.retry.catalog.GetTaskById;
 import saps.catalog.core.retry.catalog.GetTasksRetry;
 import saps.catalog.core.retry.catalog.GetUser;
 import saps.catalog.core.retry.catalog.GetUserJobTasks;
+import saps.catalog.core.retry.catalog.GetUserJobTasksCount;
 import saps.catalog.core.retry.catalog.GetUserJobs;
 import saps.catalog.core.retry.catalog.GetUserJobsCount;
 import saps.catalog.core.retry.catalog.UpdateTaskRetry;
@@ -340,10 +341,10 @@ public class CatalogUtils {
    * @param message    information message
    * @return SAPS user job list
    */
-  public static List<SapsUserJob> getUserJobs(Catalog imageStore, String state, String search, Integer page,
-      Integer size, String sortField, String sortOrder, boolean withoutTasks, boolean allOngoingJobs, String message) {
+  public static List<SapsUserJob> getUserJobs(Catalog imageStore, JobState state, String search, Integer page,
+      Integer size, String sortField, String sortOrder, boolean withoutTasks, boolean recoverOnlyOngoing, String message) {
     return retry(
-        new GetUserJobs(imageStore, state, search, page, size, sortField, sortOrder, withoutTasks, allOngoingJobs),
+        new GetUserJobs(imageStore, state, search, page, size, sortField, sortOrder, withoutTasks, recoverOnlyOngoing),
         CATALOG_DEFAULT_SLEEP_SECONDS,
         message);
   }
@@ -356,21 +357,53 @@ public class CatalogUtils {
    * @param message    information message
    * @return SAPS image list
    */
-  public static Integer getUserJobsCount(Catalog imageStore, String state, String search, boolean allOngoingJobs,
+  public static Integer getUserJobsCount(Catalog imageStore, JobState state, String search, boolean recoverOnlyOngoing,
       String message) {
-    return retry(new GetUserJobsCount(imageStore, state, search, allOngoingJobs), CATALOG_DEFAULT_SLEEP_SECONDS,
+    return retry(new GetUserJobsCount(imageStore, state, search, recoverOnlyOngoing), CATALOG_DEFAULT_SLEEP_SECONDS,
         message);
   }
 
-  public static List<SapsImage> getUserJobTasks(Catalog imageStore, String jobId, String state, String search, Integer page,
-      Integer size, String sortField, String sortOrder, boolean allOngoingJobs, String message) {
-    return retry(new GetUserJobTasks(imageStore, jobId, state, search, page, size, sortField, sortOrder, allOngoingJobs), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  /**
+   * This function gets all tasks from a specific job.
+   * @param imageStore catalog component
+   * @param jobId job id
+   * @param state task state
+   * @param search  search query
+   * @param page  page number
+   * @param size  page size
+   * @param sortField sort field
+   * @param sortOrder sort order
+   * @param recoverOnlyOngoing  if true, return all ongoing jobs
+   * @param message information message
+   * @return  SAPS image list
+   */
+  public static List<SapsImage> getUserJobTasks(Catalog imageStore, String jobId, ImageTaskState state, String search, Integer page,
+      Integer size, String sortField, String sortOrder, boolean recoverOnlyOngoing, String message) {
+    return retry(new GetUserJobTasks(imageStore, jobId, state, search, page, size, sortField, sortOrder, recoverOnlyOngoing), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 
-  public static Integer getUserJobTasksCount(Catalog imageStore, String jobId, String state, String search, boolean allOngoingJobs, String message) {
-    return retry(new GetUserJobTasksCount(imageStore, jobId, state, search, allOngoingJobs), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  /**
+   * This function return the amount of tasks in catalog.
+   * @param imageStore  catalog component
+   * @param jobId job id
+   * @param state task state
+   * @param search  search query
+   * @param recoverOnlyOngoing  if true, return all ongoing jobs
+   * @param message information message
+   * @return  SAPS image list
+   */
+  public static Integer getUserJobTasksCount(Catalog imageStore, String jobId, ImageTaskState state, String search, boolean recoverOnlyOngoing, String message) {
+    return retry(new GetUserJobTasksCount(imageStore, jobId, state, search, recoverOnlyOngoing), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
 
+  /**
+   * This function updates a job state.
+   * @param imageStore  catalog component
+   * @param jobId job id
+   * @param state job state
+   * @param message information message
+   * @return  SAPS image list
+   */
   public static Boolean updateUserJob(Catalog imageStore, String jobId, JobState state, String message) {
     return retry(new UpdateUserJob(imageStore, jobId, state), CATALOG_DEFAULT_SLEEP_SECONDS, message);
   }
