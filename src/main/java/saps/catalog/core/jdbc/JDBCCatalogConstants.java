@@ -235,13 +235,13 @@ public class JDBCCatalogConstants {
           + JDBCCatalogConstants.TablesName.TASKS
           + " WHERE task_id = ANY(ARRAY(SELECT tasks_ids FROM "
           + JDBCCatalogConstants.TablesName.JOBS
-          + " WHERE job_id = '?'))";
+          + " WHERE job_id = ?))";
 
       public static final String JOB_TASKS_COUNT = "SELECT COUNT(*) FROM  "
           + JDBCCatalogConstants.TablesName.TASKS
           + " WHERE task_id = ANY(ARRAY(SELECT tasks_ids FROM "
           + JDBCCatalogConstants.TablesName.JOBS
-          + " WHERE job_id = '?'))";
+          + " WHERE job_id = ?))";
     }
 
     public final class Delete {
