@@ -15,7 +15,8 @@ public class GetUserJobs implements CatalogRetry<List<SapsUserJob>> {
   private String sortField;
   private String sortOrder;
   private boolean withoutTasks;
-  private boolean recoverOnlyOngoing;
+  private boolean recoverOngoing;
+  private boolean recoverCompleted;
 
   public GetUserJobs(Catalog imageStore,
       JobState state,
@@ -25,7 +26,8 @@ public class GetUserJobs implements CatalogRetry<List<SapsUserJob>> {
       String sortField,
       String sortOrder,
       boolean withoutTasks,
-      boolean recoverOnlyOngoing) {
+      boolean recoverOngoing,
+      boolean recoverCompleted) {
     this.imageStore = imageStore;
     this.state = state;
     this.search = search;
@@ -34,7 +36,8 @@ public class GetUserJobs implements CatalogRetry<List<SapsUserJob>> {
     this.sortField = sortField;
     this.sortOrder = sortOrder;
     this.withoutTasks = withoutTasks;
-    this.recoverOnlyOngoing = recoverOnlyOngoing;
+    this.recoverOngoing = recoverOngoing;
+    this.recoverCompleted = recoverCompleted;
   }
 
   @Override
@@ -47,6 +50,7 @@ public class GetUserJobs implements CatalogRetry<List<SapsUserJob>> {
         sortField,
         sortOrder,
         withoutTasks,
-        recoverOnlyOngoing);
+        recoverOngoing,
+        recoverCompleted);
   }
 }

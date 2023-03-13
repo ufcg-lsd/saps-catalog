@@ -726,13 +726,15 @@ public class JDBCCatalog implements Catalog {
   }
 
   private String addUserJobFilter(String search, JobState state, Integer page, Integer size, String sortField, String sortOrder,
-      boolean recoverOnlyOngoing) {
+      boolean recoverOngoing, boolean recoverCompleted) {
     StringBuilder query = new StringBuilder();
 
     if (search != null && !search.trim().isEmpty()) {
       query.append(" WHERE job_label LIKE '" + search + "%' ");
-    } else if (recoverOnlyOngoing) {
+    } else if (recoverOngoing) {
       query.append(" WHERE (state <> '" + JobState.FAILED.value() + "' AND state <> '" + JobState.FINISHED.value() + "') ");
+    } else if (recoverCompleted) {
+      query.append(" WHERE (state = '" + JobState.FAILED.value() + "' OR state = '" + JobState.FINISHED.value() + "') ");
     } else if (state != null) {
       query.append(" WHERE state = '" + state.value() + "' ");
     }
@@ -754,14 +756,15 @@ public class JDBCCatalog implements Catalog {
       String sortField,
       String sortOrder,
       boolean withoutTasks,
-      boolean recoverOnlyOngoing)
+      boolean recoverOngoing,
+      boolean recoverCompleted)
       throws CatalogException {
 
     PreparedStatement statement = null;
     Connection conn = null;
 
     StringBuilder query = new StringBuilder(JDBCCatalogConstants.Queries.Select.JOBS);
-    query.append(addUserJobFilter(search, state, page, size, sortField, sortOrder, recoverOnlyOngoing));
+    query.append(addUserJobFilter(search, state, page, size, sortField, sortOrder, recoverOngoing, recoverCompleted));
 
     try {
       conn = getConnection();
@@ -781,12 +784,12 @@ public class JDBCCatalog implements Catalog {
   }
 
   @Override
-  public Integer getUserJobsCount(JobState state, String search, boolean recoverOnlyOngoing) throws CatalogException {
+  public Integer getUserJobsCount(JobState state, String search, boolean recoverOngoing, boolean recoverCompleted) throws CatalogException {
     PreparedStatement statement = null;
     Connection connection = null;
 
     StringBuilder query = new StringBuilder(JDBCCatalogConstants.Queries.Select.JOBS_COUNT);
-    query.append(addUserJobFilter(search, state, 0, 0, null, null, recoverOnlyOngoing));
+    query.append(addUserJobFilter(search, state, 0, 0, null, null, recoverOngoing, recoverCompleted));
 
     try {
       connection = getConnection();
@@ -807,14 +810,17 @@ public class JDBCCatalog implements Catalog {
   // == Jobs tasks
 
   private String addJobTasksFilter(String search, ImageTaskState state, Integer page, Integer size,
-      String sortField, String sortOrder, boolean recoverOnlyOngoing) {
+      String sortField, String sortOrder, boolean recoverOngoing, boolean recoverCompleted) {
 
     StringBuilder query = new StringBuilder();
 
     if (search != null && !search.trim().isEmpty()) {
       query.append(" AND to_char(image_date, 'YYYY-MM-DD') LIKE '" + search + "%'");
-    } else if (recoverOnlyOngoing) {
+    } else if (recoverOngoing) {
       query.append(" AND (state <> '" + ImageTaskState.ARCHIVED.getValue() + "' AND state <> '"
+          + ImageTaskState.FAILED.getValue() + "') ");
+    } else if (recoverCompleted) {
+      query.append(" AND (state = '" + ImageTaskState.ARCHIVED.getValue() + "' OR state = '"
           + ImageTaskState.FAILED.getValue() + "') ");
     } else if (state != null) {
       query.append(" AND state = '" + state.getValue() + "' ");
@@ -837,14 +843,15 @@ public class JDBCCatalog implements Catalog {
       Integer size,
       String sortField,
       String sortOrder,
-      boolean recoverOnlyOngoing) {
+      boolean recoverOngoing,
+      boolean recoverCompleted) {
     if (jobId == null || jobId.isEmpty()) {
       LOGGER.error("invalid job id " + jobId);
       throw new IllegalArgumentException("Job id is missing");
     }
 
     StringBuilder query = new StringBuilder(JDBCCatalogConstants.Queries.Select.JOB_TASKS);
-    query.append(addJobTasksFilter(search, state, page, size, sortField, sortOrder, recoverOnlyOngoing));
+    query.append(addJobTasksFilter(search, state, page, size, sortField, sortOrder, recoverOngoing, recoverCompleted));
 
     PreparedStatement statement = null;
     Connection connection = null;
@@ -869,10 +876,10 @@ public class JDBCCatalog implements Catalog {
   }
 
   @Override
-  public Integer getUserJobTasksCount(String jobId, ImageTaskState state, String search, boolean recoverOnlyOngoing) {
+  public Integer getUserJobTasksCount(String jobId, ImageTaskState state, String search, boolean recoverOngoing, boolean recoverCompleted) {
 
     StringBuilder query = new StringBuilder(JDBCCatalogConstants.Queries.Select.JOB_TASKS_COUNT);
-    query.append(addJobTasksFilter(search, state, 0, 0, null, null, recoverOnlyOngoing));
+    query.append(addJobTasksFilter(search, state, 0, 0, null, null, recoverOngoing, recoverCompleted));
 
     PreparedStatement statement = null;
     Connection connection = null;

@@ -8,18 +8,20 @@ public class GetUserJobTasksCount implements CatalogRetry<Integer> {
   private ImageTaskState state;
   private String search;
   private String jobId;
-  private boolean recoverOnlyOngoing;
+  private boolean recoverOngoing;
+  private boolean recoverCompleted;
 
-  public GetUserJobTasksCount(Catalog imageStore, String jobId, ImageTaskState state, String search, boolean recoverOnlyOngoing) {
+  public GetUserJobTasksCount(Catalog imageStore, String jobId, ImageTaskState state, String search, boolean recoverOngoing, boolean recoverCompleted) {
     this.imageStore = imageStore;
     this.jobId = jobId;
     this.state = state;
     this.search = search;
-    this.recoverOnlyOngoing = recoverOnlyOngoing;
+    this.recoverOngoing = recoverOngoing;
+    this.recoverCompleted = recoverCompleted;
   }
 
   @Override
   public Integer run() {
-    return imageStore.getUserJobTasksCount(jobId, state, search, recoverOnlyOngoing);
+    return imageStore.getUserJobTasksCount(jobId, state, search, recoverOngoing, recoverCompleted);
   }
 }

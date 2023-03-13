@@ -193,13 +193,15 @@ public interface Catalog {
       String sortField,
       String sortOrder,
       boolean withoutTasks,
-      boolean recoverOnlyOngoing)
+      boolean recoverOngoing,
+      boolean recoverCompleted)
       throws CatalogException;
 
   Integer getUserJobsCount(
       JobState state,
       String search,
-      boolean recoverOnlyOngoing)
+      boolean recoverOngoing,
+      boolean recoverCompleted)
       throws CatalogException;
 
   List<SapsImage> getUserJobTasks(
@@ -210,13 +212,15 @@ public interface Catalog {
       Integer size,
       String sortField,
       String sortOrder,
-      boolean recoverOnlyOngoing)
+      boolean recoverOngoing,
+      boolean recoverCompleted)
       throws CatalogException;
 
   Integer getUserJobTasksCount(
       String jobId,
       ImageTaskState state,
       String search,
-      boolean recoverOnlyOngoing)
+      boolean recoverOngoing,
+      boolean recoverCompleted)
       throws CatalogException;
 }
