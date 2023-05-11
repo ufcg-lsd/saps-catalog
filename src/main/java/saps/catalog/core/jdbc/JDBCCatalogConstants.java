@@ -127,6 +127,7 @@ public class JDBCCatalogConstants {
       public static final String JOB = "INSERT INTO "
           + JDBCCatalogConstants.TablesName.JOBS
           + " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
     }
 
     public final class Update {
@@ -154,6 +155,20 @@ public class JDBCCatalogConstants {
           + " = ? WHERE "
           + JDBCCatalogConstants.Tables.Job.ID
           + " = ?";
+      
+      public static final String JOB_TASK = "UPDATE "
+        + JDBCCatalogConstants.TablesName.JOBS
+        + " SET " 
+        + JDBCCatalogConstants.Tables.Job.TASKS_IDS
+        + " = "
+        + "array_append("
+        + JDBCCatalogConstants.Tables.Job.TASKS_IDS
+        + ","
+        + "?::text"
+        + ")"
+        + " WHERE "
+        + JDBCCatalogConstants.Tables.Job.ID
+        + " = ? ";
     }
 
     public final class Select {
@@ -235,13 +250,13 @@ public class JDBCCatalogConstants {
           + JDBCCatalogConstants.TablesName.TASKS
           + " WHERE task_id = ANY(ARRAY(SELECT tasks_ids FROM "
           + JDBCCatalogConstants.TablesName.JOBS
-          + " WHERE job_id = '?'))";
+          + " WHERE job_id = ?))";
 
       public static final String JOB_TASKS_COUNT = "SELECT COUNT(*) FROM  "
           + JDBCCatalogConstants.TablesName.TASKS
           + " WHERE task_id = ANY(ARRAY(SELECT tasks_ids FROM "
           + JDBCCatalogConstants.TablesName.JOBS
-          + " WHERE job_id = '?'))";
+          + " WHERE job_id = ?))";
     }
 
     public final class Delete {

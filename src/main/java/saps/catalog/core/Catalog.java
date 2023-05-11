@@ -147,6 +147,8 @@ public interface Catalog {
 
   SapsLandsatImage getLandsatImages(String region, Date date) throws CatalogException;
 
+  void insertJobTask(String taskId, String jobId) throws CatalogException;
+
   List<SapsImage> getTasksByState(ImageTaskState... tasksStates) throws CatalogException;
 
   SapsImage getTaskById(String taskId) throws CatalogException, TaskNotFoundException;

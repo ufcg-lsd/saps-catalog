@@ -700,6 +700,38 @@ public class JDBCCatalog implements Catalog {
     return userJob;
   }
 
+  @Override 
+  public void insertJobTask(String taskId, String jobId) {
+
+    if (jobId == null || jobId.isEmpty()) {
+      LOGGER.error("job with empty id");
+      throw new IllegalArgumentException("Job with empty id.");
+    }
+
+    if (taskId == null || taskId.isEmpty()) {
+      LOGGER.error("job with empty id");
+      throw new IllegalArgumentException("Job with empty id.");
+    }
+
+    PreparedStatement insertStatement = null;
+    Connection connection = null;
+
+    try {
+      connection = getConnection();
+      insertStatement = connection.prepareStatement(JDBCCatalogConstants.Queries.Update.JOB_TASK);
+
+      insertStatement.setString(1, taskId);
+      insertStatement.setString(2, jobId);
+      insertStatement.setQueryTimeout(300);
+
+      insertStatement.execute();
+    } catch (SQLException e) {
+      throw new CatalogException("Error while insert a task into job" + e);
+    } finally {
+      close(insertStatement, connection);
+    }
+  }
+
   @Override
   public void updateUserJob(String jobId, JobState state) throws CatalogException {
     if (jobId == null || jobId.isEmpty()) {
@@ -730,7 +762,7 @@ public class JDBCCatalog implements Catalog {
     StringBuilder query = new StringBuilder();
 
     if (search != null && !search.trim().isEmpty()) {
-      query.append(" WHERE job_label LIKE '" + search + "%' ");
+      query.append(" WHERE job_label LIKE '%" + search + "%' ");
     } else if (recoverOngoing) {
       query.append(" WHERE (state <> '" + JobState.FAILED.value() + "' AND state <> '" + JobState.FINISHED.value() + "') ");
     } else if (recoverCompleted) {
@@ -864,6 +896,8 @@ public class JDBCCatalog implements Catalog {
       statement.setQueryTimeout(300);
       statement.execute();
 
+      LOGGER.info("Query: " + statement.toString());
+
       ResultSet rs = statement.getResultSet();
       return JDBCCatalogUtil.extractSapsTasks(rs);
     } catch (SQLException e) {
@@ -890,6 +924,8 @@ public class JDBCCatalog implements Catalog {
       statement.setString(1, jobId);
       statement.setQueryTimeout(300);
       statement.execute();
+
+      LOGGER.info("Query: " + statement.toString());
 
       ResultSet rs = statement.getResultSet();
       rs.next();

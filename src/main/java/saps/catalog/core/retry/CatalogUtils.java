@@ -25,6 +25,7 @@ import saps.catalog.core.retry.catalog.GetUserJobs;
 import saps.catalog.core.retry.catalog.GetUserJobsCount;
 import saps.catalog.core.retry.catalog.UpdateTaskRetry;
 import saps.catalog.core.retry.catalog.UpdateUserJob;
+import saps.catalog.core.retry.catalog.InsertJobTask;
 import saps.catalog.core.retry.catalog.exceptions.CatalogRetryException;
 
 import saps.common.core.model.SapsImage;
@@ -206,7 +207,12 @@ public class CatalogUtils {
         CATALOG_DEFAULT_SLEEP_SECONDS,
         message);
   }
-
+  /**
+  TODO: Documentation
+  */
+  public static void insertJobTask(Catalog imageStore, String taskId, String jobId, String message) {
+    retry(new InsertJobTask(imageStore, taskId, jobId), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+  }
   /**
    * This function adds new task.
    *
