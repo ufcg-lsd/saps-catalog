@@ -3,10 +3,12 @@ package saps.catalog.core.retry;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
 import saps.catalog.core.Catalog;
+import saps.catalog.core.jdbc.imageStore;
 import saps.catalog.core.retry.catalog.AddNewTask;
 import saps.catalog.core.retry.catalog.AddNewUser;
 import saps.catalog.core.retry.catalog.AddNewUserJob;
@@ -41,41 +43,6 @@ public class CatalogUtils {
   private static final int CATALOG_DEFAULT_SLEEP_SECONDS = 5;
 
   /**
-   * This function tries countless times to successfully execute the passed
-   * function.
-   *
-   * @param <T>            Return type
-   * @param function       Function passed for execute
-   * @param sleepInSeconds Time sleep in seconds (case fail)
-   * @param message        Information message about function passed
-   * @return Function return
-   */
-  @SuppressWarnings("unchecked")
-  private static <T> T retry(CatalogRetry<?> function, int sleepInSeconds, String message) {
-    LOGGER.info(
-        "[Retry Catalog function] Trying "
-            + message
-            + " using "
-            + sleepInSeconds
-            + " seconds with time sleep");
-
-    while (true) {
-      try {
-        return (T) function.run();
-      } catch (CatalogRetryException e) {
-        LOGGER.error("Failed while " + message, e);
-      }
-
-      try {
-        LOGGER.info("Sleeping for " + sleepInSeconds + " seconds");
-        Thread.sleep(Long.valueOf(sleepInSeconds) * 1000);
-      } catch (InterruptedException e) {
-        LOGGER.error("Failed while " + message, e);
-      }
-    }
-  }
-
-  /**
    * This function gets tasks in specific state in Catalog.
    *
    * @param imageStore catalog component
@@ -83,10 +50,7 @@ public class CatalogUtils {
    * @return tasks in specific state
    */
   public static List<SapsImage> getTasks(Catalog imageStore, ImageTaskState state) {
-    return retry(
-        new GetTasksRetry(imageStore, state),
-        CATALOG_DEFAULT_SLEEP_SECONDS,
-        "gets tasks with " + state.getValue() + " state");
+    return imageStore.getTasksByState(state);
   }
 
   /**
@@ -99,10 +63,7 @@ public class CatalogUtils {
    *         in catalog
    */
   public static boolean updateState(Catalog imageStore, SapsImage task) {
-    return retry(
-        new UpdateTaskRetry(imageStore, task),
-        CATALOG_DEFAULT_SLEEP_SECONDS,
-        "update task [" + task.getTaskId() + " state]");
+    return imageStore.updateImageTask(task);
   }
 
   /**
@@ -113,7 +74,12 @@ public class CatalogUtils {
    * @return processing tasks list
    */
   public static List<SapsImage> getProcessingTasks(Catalog imageStore, String message) {
-    return retry(new GetProcessingTasksRetry(imageStore), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+    ImageTaskState[] states = {
+      ImageTaskState.DOWNLOADING, ImageTaskState.PREPROCESSING, ImageTaskState.RUNNING
+    };
+
+    LOGGER.info(message);
+    return imageStore.getTasksByState(states);
   }
 
   /**
@@ -123,10 +89,8 @@ public class CatalogUtils {
    * @param task       task to be update
    */
   public static void addTimestampTask(Catalog imageStore, SapsImage task) {
-    retry(
-        new AddTimestampRetry(imageStore, task),
-        CATALOG_DEFAULT_SLEEP_SECONDS,
-        "add timestamp to task [" + task.getTaskId() + "]");
+    //review this method. take a look at the older version
+    imageStore.addStateChangeTime(task.getId(), task.getState(), task.getUpdateTime);
   }
 
   /**
@@ -150,10 +114,8 @@ public class CatalogUtils {
       boolean userNotify,
       boolean adminRole,
       String message) {
-    retry(
-        new AddNewUser(imageStore, userEmail, userName, userPass, userState, userNotify, adminRole),
-        CATALOG_DEFAULT_SLEEP_SECONDS,
-        message);
+    LOGGER.info(message);
+    imageStore.addUser(userEmail, userName, userPass, userState, userNotify, adminRole);
   }
 
   /**
@@ -164,7 +126,8 @@ public class CatalogUtils {
    * @param message    information message
    */
   public static SapsUser getUser(Catalog imageStore, String userEmail, String message) {
-    return retry(new GetUser(imageStore, userEmail), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+    LOGGER.info(message);
+    return imageStore.getUserByEmail(userEmail);
   }
 
   /**
@@ -190,28 +153,19 @@ public class CatalogUtils {
       int priority,
       List<String> tasksIds,
       String message) {
-    return retry(
-        new AddNewUserJob(
-            imageStore,
-            jobId,
-            lowerLeftLatitude,
-            lowerLeftLongitude,
-            upperRightLatitude,
-            upperRightLongitude,
-            userEmail,
-            jobLabel,
-            startDate,
-            endDate,
-            priority,
-            tasksIds),
-        CATALOG_DEFAULT_SLEEP_SECONDS,
-        message);
+    LOGGER.info(message);
+    return imageStore.addJob(jobId, lowerLeftLatitude, lowerLeftLongitude, upperRightLatitude, 
+    upperRightLongitude, userEmail, jobLabel, startDate, endDate, priority, tasksIds);
   }
   /**
-  TODO: Documentation
+  @param imageStore                 catalog component
+  @param taskId                     task id
+  @param jobId                      job id
+  @param message                    trash. we don't need that anymore.
   */
   public static void insertJobTask(Catalog imageStore, String taskId, String jobId, String message) {
-    retry(new InsertJobTask(imageStore, taskId, jobId), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+    LOGGER.info(message);
+    imageStore.insertJobTask(taskId, jobId);
   }
   /**
    * This function adds new task.
@@ -230,38 +184,13 @@ public class CatalogUtils {
    * @return new SAPS image
    */
   public static SapsImage addNewTask(
-      Catalog imageStore,
-      String taskId,
-      String dataset,
-      String region,
-      Date date,
-      int priority,
-      String userEmail,
-      String inputdownloadingPhaseTag,
-      String digestInputdownloading,
-      String preprocessingPhaseTag,
-      String digestPreprocessing,
-      String processingPhaseTag,
-      String digestProcessing,
-      String message) {
-
-    return retry(
-        new AddNewTask(
-            imageStore,
-            taskId,
-            dataset,
-            region,
-            date,
-            priority,
-            userEmail,
-            inputdownloadingPhaseTag,
-            digestInputdownloading,
-            preprocessingPhaseTag,
-            digestPreprocessing,
-            processingPhaseTag,
-            digestProcessing),
-        CATALOG_DEFAULT_SLEEP_SECONDS,
-        message);
+      Catalog imageStore, String taskId, String dataset, String region, Date date, int priority, String userEmail,
+      String inputdownloadingPhaseTag, String digestInputdownloading, String preprocessingPhaseTag, String digestPreprocessing,
+      String processingPhaseTag, String digestProcessing, String message) {
+  
+    LOGGER.info(message);
+    return imageStore.addTask(taskId, dataset, region, date, priority, userEmail, inputdownloadingPhaseTag, 
+    digestInputdownloading, preprocessingPhaseTag, digestPreprocessing, processingPhaseTag, digestProcessing);
   }
 
   /**
@@ -276,7 +205,8 @@ public class CatalogUtils {
    */
   public static SapsLandsatImage validateLandsatImage(Catalog imageStore, String region, Date date, String message) {
     // SQL QUERY, if we got the image return TRUE, else return FALSE
-    return retry(new GetLandsatImages(imageStore, region, date), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+    LOGGER.info(message);
+    return imageStore.getLandsatImages(region, date);
   }
 
   /**
@@ -286,7 +216,8 @@ public class CatalogUtils {
    * @return SAPS image with task id informed
    */
   public static SapsImage getTaskById(Catalog imageStore, String taskId, String message) {
-    return retry(new GetTaskById(imageStore, taskId), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+    LOGGER.info(message);
+    return imageStore.getTaskById(taskId);
   }
 
   /**
@@ -312,17 +243,8 @@ public class CatalogUtils {
       String processingPhaseTag,
       String message) {
 
-    return retry(
-        new GetProcessedTasks(
-            imageStore,
-            region,
-            initDate,
-            endDate,
-            inputdownloadingPhaseTag,
-            preprocessingPhaseTag,
-            processingPhaseTag),
-        CATALOG_DEFAULT_SLEEP_SECONDS,
-        message);
+    LOGGER.info(message);
+    return imageStore.filterTasks(ImageTaskState.ARCHIVED, region, initDate, endDate, message, preprocessingPhaseTag, processingPhaseTag);
   }
 
   /**
@@ -332,7 +254,8 @@ public class CatalogUtils {
    * @return SAPS image list
    */
   public static List<SapsImage> getAllTasks(Catalog imageStore, String message) {
-    return retry(new GetAllTasks(imageStore), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+    LOGGER.info(message);
+    return imageStore.getAllTasks();
   }
 
   /**
@@ -353,9 +276,8 @@ public class CatalogUtils {
   public static List<SapsUserJob> getUserJobs(Catalog imageStore, JobState state, String search, Integer page,
       Integer size, String sortField, String sortOrder, boolean withoutTasks, boolean recoverOngoing,
       boolean recoverCompleted, String message) {
-    return retry(
-        new GetUserJobs(imageStore, state, search, page, size, sortField, sortOrder, withoutTasks, recoverOngoing,
-            recoverCompleted), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+    LOGGER.info(message);
+    return imageStore.getUserJobs(state, search, page, size, sortField, sortOrder, withoutTasks, recoverOngoing, recoverCompleted);
   }
 
   /**
@@ -368,8 +290,8 @@ public class CatalogUtils {
    */
   public static Integer getUserJobsCount(Catalog imageStore, JobState state, String search, boolean recoverOngoing,
       boolean recoverCompleted, String message) {
-    return retry(new GetUserJobsCount(imageStore, state, search, recoverOngoing, recoverCompleted),
-        CATALOG_DEFAULT_SLEEP_SECONDS, message);
+    LOGGER.info(message);
+    return imageStore.getUserJobsCount(state, search, recoverOngoing, recoverCompleted);
   }
 
   /**
@@ -391,9 +313,8 @@ public class CatalogUtils {
   public static List<SapsImage> getUserJobTasks(Catalog imageStore, String jobId, ImageTaskState state, String search,
       Integer page, Integer size, String sortField, String sortOrder, boolean recoverOngoing,
       boolean recoverCompleted, String message) {
-    return retry(
-        new GetUserJobTasks(imageStore, jobId, state, search, page, size, sortField, sortOrder, recoverOngoing,
-            recoverCompleted), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+    LOGGER.info(message);
+    return imageStore.getUserJobTasks(jobId, state, search, page, size, sortField, sortOrder, recoverOngoing, recoverCompleted);
   }
 
   /**
@@ -410,8 +331,8 @@ public class CatalogUtils {
    */
   public static Integer getUserJobTasksCount(Catalog imageStore, String jobId, ImageTaskState state, String search,
       boolean recoverOngoing, boolean recoverCompleted, String message) {
-    return retry(new GetUserJobTasksCount(imageStore, jobId, state, search, recoverOngoing, recoverCompleted),
-        CATALOG_DEFAULT_SLEEP_SECONDS, message);
+    LOGGER.info(message);
+    return imageStore.getUserJobTasksCount(jobId, state, search, recoverOngoing, recoverCompleted);
   }
 
   /**
@@ -424,7 +345,8 @@ public class CatalogUtils {
    * @return SAPS image list
    */
   public static Boolean updateUserJob(Catalog imageStore, String jobId, JobState state, String message) {
-    return retry(new UpdateUserJob(imageStore, jobId, state), CATALOG_DEFAULT_SLEEP_SECONDS, message);
+    LOGGER.info(message);
+    return imageStore.updateUserJob(jobId, state); 
   }
 
 }
