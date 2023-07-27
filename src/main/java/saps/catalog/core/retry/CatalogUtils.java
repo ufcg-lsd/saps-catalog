@@ -8,27 +8,6 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 
 import saps.catalog.core.Catalog;
-import saps.catalog.core.jdbc.imageStore;
-import saps.catalog.core.retry.catalog.AddNewTask;
-import saps.catalog.core.retry.catalog.AddNewUser;
-import saps.catalog.core.retry.catalog.AddNewUserJob;
-import saps.catalog.core.retry.catalog.AddTimestampRetry;
-import saps.catalog.core.retry.catalog.CatalogRetry;
-import saps.catalog.core.retry.catalog.GetAllTasks;
-import saps.catalog.core.retry.catalog.GetLandsatImages;
-import saps.catalog.core.retry.catalog.GetProcessedTasks;
-import saps.catalog.core.retry.catalog.GetProcessingTasksRetry;
-import saps.catalog.core.retry.catalog.GetTaskById;
-import saps.catalog.core.retry.catalog.GetTasksRetry;
-import saps.catalog.core.retry.catalog.GetUser;
-import saps.catalog.core.retry.catalog.GetUserJobTasks;
-import saps.catalog.core.retry.catalog.GetUserJobTasksCount;
-import saps.catalog.core.retry.catalog.GetUserJobs;
-import saps.catalog.core.retry.catalog.GetUserJobsCount;
-import saps.catalog.core.retry.catalog.UpdateTaskRetry;
-import saps.catalog.core.retry.catalog.UpdateUserJob;
-import saps.catalog.core.retry.catalog.InsertJobTask;
-import saps.catalog.core.retry.catalog.exceptions.CatalogRetryException;
 
 import saps.common.core.model.SapsImage;
 import saps.common.core.model.SapsLandsatImage;
@@ -62,8 +41,8 @@ public class CatalogUtils {
    *         update state task
    *         in catalog
    */
-  public static boolean updateState(Catalog imageStore, SapsImage task) {
-    return imageStore.updateImageTask(task);
+  public static void updateState(Catalog imageStore, SapsImage task) {
+    imageStore.updateImageTask(task);
   }
 
   /**
@@ -90,7 +69,7 @@ public class CatalogUtils {
    */
   public static void addTimestampTask(Catalog imageStore, SapsImage task) {
     //review this method. take a look at the older version
-    imageStore.addStateChangeTime(task.getId(), task.getState(), task.getUpdateTime);
+    imageStore.addStateChangeTime(task.getTaskId(), task.getState(), task.getUpdateTime());
   }
 
   /**
@@ -344,9 +323,9 @@ public class CatalogUtils {
    * @param message    information message
    * @return SAPS image list
    */
-  public static Boolean updateUserJob(Catalog imageStore, String jobId, JobState state, String message) {
+  public static void updateUserJob(Catalog imageStore, String jobId, JobState state, String message) {
     LOGGER.info(message);
-    return imageStore.updateUserJob(jobId, state); 
+    imageStore.updateUserJob(jobId, state); 
   }
 
 }
