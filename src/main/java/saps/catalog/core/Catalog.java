@@ -9,27 +9,10 @@ import saps.catalog.core.exceptions.TaskNotFoundException;
 import saps.catalog.core.exceptions.UserNotFoundException;
 import saps.common.core.model.SapsImage;
 import saps.common.core.model.SapsUser;
-import saps.common.core.model.SapsUserJob;
 import saps.common.core.model.SapsLandsatImage;
 import saps.common.core.model.enums.ImageTaskState;
-import saps.common.core.model.enums.JobState;
 
 public interface Catalog {
-
-  // FIXME: maybe, refactor related information into a separated data structured,
-  // e.g.:
-  // satellite data: dataset, region and date.
-  // - SAPS schema: taskID, priority, userEmail.
-  // - versions of the processing step algorithms: inputdownloadingPhaseTag,
-  // preprocessingPhaseTag
-  // and processingPhaseTag.<br>
-  // - Docker: digestInputdownloading, digestPreprocessing and digestProcessing.
-  // FIXME: by manel. I think we can use an UUID instead of the taskId string
-  // FIXME: by manel. I think we can use an ENUM instead of the dataset string
-
-  // FIXME: verify and doc the high priority (0 or 31?)
-
-  // FIXME: by manel. do we really need this *phaseTag parameters?
 
   /**
    * It adds a new Task into this {@code Catalog}.<br>
@@ -134,8 +117,7 @@ public interface Catalog {
       boolean adminRole)
       throws CatalogException;
 
-  // FIXME: i think we should throw an exception when there is no imageTask in the
-  // Catalog
+ 
   void updateImageTask(SapsImage imageTask) throws CatalogException;
 
   // FIXME: we should explain we return an empty list in some cases
@@ -147,16 +129,12 @@ public interface Catalog {
 
   SapsLandsatImage getLandsatImages(String region, Date date) throws CatalogException;
 
-  void insertJobTask(String taskId, String jobId) throws CatalogException;
-
   List<SapsImage> getTasksByState(ImageTaskState... tasksStates) throws CatalogException;
 
   SapsImage getTaskById(String taskId) throws CatalogException, TaskNotFoundException;
 
-  // FIXME: what if the userEmail is null? empty string? (doc it)
   SapsUser getUserByEmail(String userEmail) throws CatalogException, UserNotFoundException;
 
-  // FIXME: what if the taskId does not exist in the catalog
   void removeStateChangeTime(String taskId, ImageTaskState state, Timestamp timestamp)
       throws CatalogException;
 
@@ -169,60 +147,5 @@ public interface Catalog {
       String inputdownloadingTag,
       String preprocessingTag,
       String processingTag)
-      throws CatalogException;
-
-  SapsUserJob addJob(
-      String jobId,
-      String lowerLeftLatitude,
-      String lowerLeftLongitude,
-      String upperRightLatitude,
-      String upperRightLongitude,
-      String userEmail,
-      String jobLabel,
-      Date startDate,
-      Date endDate,
-      int priority,
-      List<String> taskIds)
-      throws CatalogException;
-
-  void updateUserJob(String jobId, JobState state) throws CatalogException;
-
-  List<SapsUserJob> getUserJobs(
-      JobState state,
-      String search,
-      Integer page,
-      Integer size,
-      String sortField,
-      String sortOrder,
-      boolean withoutTasks,
-      boolean recoverOngoing,
-      boolean recoverCompleted)
-      throws CatalogException;
-
-  Integer getUserJobsCount(
-      JobState state,
-      String search,
-      boolean recoverOngoing,
-      boolean recoverCompleted)
-      throws CatalogException;
-
-  List<SapsImage> getUserJobTasks(
-      String jobId,
-      ImageTaskState state,
-      String search,
-      Integer page,
-      Integer size,
-      String sortField,
-      String sortOrder,
-      boolean recoverOngoing,
-      boolean recoverCompleted)
-      throws CatalogException;
-
-  Integer getUserJobTasksCount(
-      String jobId,
-      ImageTaskState state,
-      String search,
-      boolean recoverOngoing,
-      boolean recoverCompleted)
       throws CatalogException;
 }

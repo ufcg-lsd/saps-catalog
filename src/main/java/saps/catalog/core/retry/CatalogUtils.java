@@ -3,8 +3,6 @@ package saps.catalog.core.retry;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 
 import saps.catalog.core.Catalog;
@@ -12,9 +10,7 @@ import saps.catalog.core.Catalog;
 import saps.common.core.model.SapsImage;
 import saps.common.core.model.SapsLandsatImage;
 import saps.common.core.model.SapsUser;
-import saps.common.core.model.SapsUserJob;
 import saps.common.core.model.enums.ImageTaskState;
-import saps.common.core.model.enums.JobState;
 
 public class CatalogUtils {
 
@@ -58,6 +54,14 @@ public class CatalogUtils {
     };
 
     LOGGER.info(message);
+
+    try {
+      Thread.sleep(CATALOG_DEFAULT_SLEEP_SECONDS);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    
     return imageStore.getTasksByState(states);
   }
 
@@ -109,43 +113,8 @@ public class CatalogUtils {
     return imageStore.getUserByEmail(userEmail);
   }
 
-  /**
-   * This function gets tasks in specific state in Catalog.
-   *
-   * @param imageStore catalog component
-   * @param state      specific state for get tasks
-   * @param page       page number
-   * @param pageSize   page size
-   * @return tasks in specific state
-   */
-  public static SapsUserJob addNewUserJob(
-      Catalog imageStore,
-      String jobId,
-      String lowerLeftLatitude,
-      String lowerLeftLongitude,
-      String upperRightLatitude,
-      String upperRightLongitude,
-      String userEmail,
-      String jobLabel,
-      Date startDate,
-      Date endDate,
-      int priority,
-      List<String> tasksIds,
-      String message) {
-    LOGGER.info(message);
-    return imageStore.addJob(jobId, lowerLeftLatitude, lowerLeftLongitude, upperRightLatitude, 
-    upperRightLongitude, userEmail, jobLabel, startDate, endDate, priority, tasksIds);
-  }
-  /**
-  @param imageStore                 catalog component
-  @param taskId                     task id
-  @param jobId                      job id
-  @param message                    trash. we don't need that anymore.
-  */
-  public static void insertJobTask(Catalog imageStore, String taskId, String jobId, String message) {
-    LOGGER.info(message);
-    imageStore.insertJobTask(taskId, jobId);
-  }
+ 
+
   /**
    * This function adds new task.
    *
@@ -236,96 +205,4 @@ public class CatalogUtils {
     LOGGER.info(message);
     return imageStore.getAllTasks();
   }
-
-  /**
-   * This functions gets all jobs from catalog.
-   * 
-   * @param imageStore       catalog component
-   * @param search           search query
-   * @param page             page number
-   * @param size             page size
-   * @param sortField        sort field
-   * @param sortOrder        sort order
-   * @param withoutTasks     if true, return all jobs without tasks
-   * @param recoverOngoing   if true, return all ongoing jobs
-   * @param recoverCompleted if true, return all completed jobs
-   * @param message          information message
-   * @return SAPS user job list
-   */
-  public static List<SapsUserJob> getUserJobs(Catalog imageStore, JobState state, String search, Integer page,
-      Integer size, String sortField, String sortOrder, boolean withoutTasks, boolean recoverOngoing,
-      boolean recoverCompleted, String message) {
-    LOGGER.info(message);
-    return imageStore.getUserJobs(state, search, page, size, sortField, sortOrder, withoutTasks, recoverOngoing, recoverCompleted);
-  }
-
-  /**
-   * This function return the amount of jobs in catalog.
-   * 
-   * @param imageStore catalog component
-   * @param search     search query
-   * @param message    information message
-   * @return SAPS image list
-   */
-  public static Integer getUserJobsCount(Catalog imageStore, JobState state, String search, boolean recoverOngoing,
-      boolean recoverCompleted, String message) {
-    LOGGER.info(message);
-    return imageStore.getUserJobsCount(state, search, recoverOngoing, recoverCompleted);
-  }
-
-  /**
-   * This function gets all tasks from a specific job.
-   * 
-   * @param imageStore       catalog component
-   * @param jobId            job id
-   * @param state            task state
-   * @param search           search query
-   * @param page             page number
-   * @param size             page size
-   * @param sortField        sort field
-   * @param sortOrder        sort order
-   * @param recoverOngoing   if true, return all ongoing tasks
-   * @param recoverCompleted if true, return all completed tasks
-   * @param message          information message
-   * @return SAPS image list
-   */
-  public static List<SapsImage> getUserJobTasks(Catalog imageStore, String jobId, ImageTaskState state, String search,
-      Integer page, Integer size, String sortField, String sortOrder, boolean recoverOngoing,
-      boolean recoverCompleted, String message) {
-    LOGGER.info(message);
-    return imageStore.getUserJobTasks(jobId, state, search, page, size, sortField, sortOrder, recoverOngoing, recoverCompleted);
-  }
-
-  /**
-   * This function return the amount of tasks in catalog.
-   * 
-   * @param imageStore       catalog component
-   * @param jobId            job id
-   * @param state            task state
-   * @param search           search query
-   * @param recoverOngoing   if true, return all ongoing tasks count
-   * @param recoverCompleted if true, return all completed tasks count
-   * @param message          information message
-   * @return SAPS image list
-   */
-  public static Integer getUserJobTasksCount(Catalog imageStore, String jobId, ImageTaskState state, String search,
-      boolean recoverOngoing, boolean recoverCompleted, String message) {
-    LOGGER.info(message);
-    return imageStore.getUserJobTasksCount(jobId, state, search, recoverOngoing, recoverCompleted);
-  }
-
-  /**
-   * This function updates a job state.
-   * 
-   * @param imageStore catalog component
-   * @param jobId      job id
-   * @param state      job state
-   * @param message    information message
-   * @return SAPS image list
-   */
-  public static void updateUserJob(Catalog imageStore, String jobId, JobState state, String message) {
-    LOGGER.info(message);
-    imageStore.updateUserJob(jobId, state); 
-  }
-
 }
