@@ -460,6 +460,90 @@ public class JDBCCatalog implements Catalog {
     }
   }
 
+  private String buildOngoingWithPaginationQuery(String search, Integer page, Integer size, String sortField,
+      String sortOrder) {
+    StringBuilder query = new StringBuilder("SELECT * FROM " + JDBCCatalogConstants.TablesName.TASKS);
+    query.append(" WHERE " + JDBCCatalogConstants.Tables.Task.STATE + " <> 'archived' ");
+    query.append(" AND " + JDBCCatalogConstants.Tables.Task.STATE + " <> 'failed' ");
+
+    if (search != null && !search.trim().isEmpty())
+      query.append(" AND to_char(image_date , 'YYYY-MM-DD') LIKE '" + search + "%' ");
+    if (sortField != null && sortOrder != null && !sortField.trim().isEmpty() && !sortOrder.trim().isEmpty())
+      query.append(" ORDER BY " + sortField + " " + sortOrder.toUpperCase());
+    if (page > 0 && size > 0)
+      query.append(" OFFSET " + (page - 1) * size + " ROWS FETCH NEXT " + size + " ROWS ONLY");
+
+    return query.toString();
+  }
+
+  @Override
+  public List<SapsImage> getTasksOngoingWithPagination(String search, Integer page, Integer size, String sortField,
+      String sortOrder) throws CatalogException {
+
+    Statement statement = null;
+    Connection connection = null;
+
+    try {
+      String query = buildOngoingWithPaginationQuery(search, page, size, sortField, sortOrder);
+
+      connection = getConnection();
+      statement = connection.createStatement();
+      statement.setQueryTimeout(300);
+
+      statement.execute(query);
+      ResultSet rs = statement.getResultSet();
+      return JDBCCatalogUtil.extractSapsTasks(rs);
+    } catch (SQLException e) {
+      throw new CatalogException("Error while select all tasks");
+    } catch (JDBCCatalogException e) {
+      throw new CatalogException("Error while extract all tasks");
+    } finally {
+      close(statement, connection);
+    }
+  }
+
+  private String buildCompletedWithPaginationQuery(String search, Integer page, Integer size, String sortField,
+      String sortOrder) {
+    StringBuilder query = new StringBuilder("SELECT * FROM " + JDBCCatalogConstants.TablesName.TASKS);
+    query.append(" WHERE (" + JDBCCatalogConstants.Tables.Task.STATE + " = 'archived' ");
+    query.append(" OR " + JDBCCatalogConstants.Tables.Task.STATE + " = 'failed') ");
+
+    if (search != null && !search.trim().isEmpty())
+      query.append(" AND to_char(image_date , 'YYYY-MM-DD') LIKE '" + search + "%' ");
+    if (sortField != null && sortOrder != null && !sortField.trim().isEmpty() && !sortOrder.trim().isEmpty())
+      query.append(" ORDER BY " + sortField + " " + sortOrder.toUpperCase());
+    if (page > 0 && size > 0)
+      query.append(" OFFSET " + (page - 1) * size + " ROWS FETCH NEXT " + size + " ROWS ONLY");
+
+    return query.toString();
+  }
+
+  @Override
+  public List<SapsImage> getTasksCompletedWithPagination(String search, Integer page, Integer size, String sortField,
+      String sortOrder)
+      throws CatalogException {
+    Statement statement = null;
+    Connection connection = null;
+
+    try {
+      String query = buildCompletedWithPaginationQuery(search, page, size, sortField, sortOrder);
+
+      connection = getConnection();
+      statement = connection.createStatement();
+      statement.setQueryTimeout(300);
+
+      statement.execute(query);
+      ResultSet rs = statement.getResultSet();
+      return JDBCCatalogUtil.extractSapsTasks(rs);
+    } catch (SQLException e) {
+      throw new CatalogException("Error while select all tasks");
+    } catch (JDBCCatalogException e) {
+      throw new CatalogException("Error while extract all tasks");
+    } finally {
+      close(statement, connection);
+    }
+  }
+
   @Override
   public List<SapsImage> filterTasks(
       ImageTaskState state,
@@ -609,6 +693,68 @@ public class JDBCCatalog implements Catalog {
       throw new CatalogException("Error while removes state change time");
     } finally {
       close(removeStatement, connection);
+    }
+  }
+
+  private String buildCountOngoingQuery(String search) {
+    StringBuilder query = new StringBuilder(JDBCCatalogConstants.Queries.Select.TASKS_ONGOING_COUNT);
+
+    if (search != null && !search.trim().isEmpty())
+      query.append(" AND to_char(image_date , 'YYYY-MM-DD') LIKE '" + search + "%' ");
+
+    return query.toString();
+  }
+
+  @Override
+  public Integer getCountOngoingTasks(String search) throws CatalogException {
+    Statement statement = null;
+    Connection connection = null;
+    try {
+      String query = buildCountOngoingQuery(search);
+
+      connection = getConnection();
+      statement = connection.createStatement();
+      statement.setQueryTimeout(300);
+      statement.execute(query);
+
+      ResultSet rs = statement.getResultSet();
+      rs.next();
+      return rs.getInt("count");
+    } catch (SQLException e) {
+      throw new CatalogException("Error while select all tasks");
+    } finally {
+      close(statement, connection);
+    }
+  }
+
+  private String buildCountCompletedQuery(String search) {
+    StringBuilder query = new StringBuilder(JDBCCatalogConstants.Queries.Select.TASKS_COMPLETED_COUNT);
+
+    if (search != null && !search.trim().isEmpty())
+      query.append(" AND to_char(image_date , 'YYYY-MM-DD') LIKE '" + search + "%' ");
+
+    return query.toString();
+  }
+
+  @Override
+  public Integer getCountCompletedTasks(String search) throws CatalogException {
+    Statement statement = null;
+    Connection connection = null;
+    try {
+      String query = buildCountCompletedQuery(search);
+
+      connection = getConnection();
+      statement = connection.createStatement();
+      statement.setQueryTimeout(300);
+      statement.execute(query);
+
+      ResultSet rs = statement.getResultSet();
+      rs.next();
+      return rs.getInt("count");
+    } catch (SQLException e) {
+      throw new CatalogException("Error while select all tasks");
+    } finally {
+      close(statement, connection);
     }
   }
 }

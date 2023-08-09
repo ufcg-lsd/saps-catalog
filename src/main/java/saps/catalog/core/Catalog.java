@@ -148,4 +148,15 @@ public interface Catalog {
       String preprocessingTag,
       String processingTag)
       throws CatalogException;
+
+    List<SapsImage> getTasksCompletedWithPagination(String search, Integer page, Integer size, String sortField,
+        String sortOrder);
+
+    List<SapsImage> getTasksOngoingWithPagination(String search, Integer page, Integer size, String sortField,
+        String sortOrder);
+    
+    Integer getCountCompletedTasks(String search) throws CatalogException;
+
+    Integer getCountOngoingTasks(String search) throws CatalogException;
+
 }

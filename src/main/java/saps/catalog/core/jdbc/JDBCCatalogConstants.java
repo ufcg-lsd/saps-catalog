@@ -257,6 +257,22 @@ public class JDBCCatalogConstants {
           + " WHERE task_id = ANY(ARRAY(SELECT tasks_ids FROM "
           + JDBCCatalogConstants.TablesName.JOBS
           + " WHERE job_id = ?))";
+      
+      public static final String TASKS_ONGOING_COUNT = "SELECT COUNT(*) FROM "
+          + JDBCCatalogConstants.TablesName.TASKS
+          + " WHERE ("
+          + Tables.Task.STATE
+          + " <> 'archived' AND "
+          + Tables.Task.STATE
+          + " <> 'failed')";
+
+      public static final String TASKS_COMPLETED_COUNT = "SELECT COUNT(*) FROM "
+          + JDBCCatalogConstants.TablesName.TASKS
+          + " WHERE ("
+          + Tables.Task.STATE
+          + " = 'archived' OR "
+          + Tables.Task.STATE
+          + " = 'failed')";
     }
 
     public final class Delete {

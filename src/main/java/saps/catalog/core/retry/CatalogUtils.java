@@ -196,6 +196,60 @@ public class CatalogUtils {
   }
 
   /**
+   * This function return all the tasks that have not finished all the pipeline.
+   * @param imageStore  catalog component
+   * @param search      search query
+   * @param page        pagination page number
+   * @param size        pagination page size
+   * @param sortField   sort field
+   * @param sortOrder   type of sort order
+   * @param message     information message
+   * @return SAPS image list
+   */
+  public static List<SapsImage> getTasksOngoingWithPagination(Catalog imageStore, String search, Integer page,
+      Integer size, String sortField, String sortOrder) {
+    return imageStore.getTasksOngoingWithPagination(search, page, size, sortField, sortOrder);
+  }
+
+  /**
+   * This function return all the tasks that have finished all the pipeline.
+   * @param imageStore  catalog component
+   * @param search      search query
+   * @param page        pagination page number
+   * @param size        pagination page size
+   * @param sortField   sort field
+   * @param sortOrder   type of sort order
+   * @param message     information message
+   * @return SAPS image list
+   */
+  public static List<SapsImage> getTasksCompletedWithPagination(Catalog imageStore, String search, Integer page,
+      Integer size, String sortField, String sortOrder) {
+    return imageStore.getTasksCompletedWithPagination(search, page, size, sortField, sortOrder);
+  }
+
+  /**
+   * This function return the amount of tasks that have not finished all the pipeline.
+   * @param imageStore  catalog component
+   * @param search      search query
+   * @param message     information message
+   * @return SAPS image list
+   */
+  public static Integer getCountOngoingTasks(Catalog imageStore, String search, String message) {
+    return imageStore.getCountOngoingTasks(search);
+  }
+
+  /**
+   * This function return the amount of tasks that have finished all the pipeline.
+   * @param imageStore  catalog component
+   * @param search      search query
+   * @param message     information message
+   * @return SAPS image list
+   */
+  public static Integer getCountCompletedTasks(Catalog imageStore, String search, String message) {
+    return imageStore.getCountCompletedTasks(search);
+  }
+
+  /**
    * This function get all tasks.
    *
    * @param imageStore catalog component

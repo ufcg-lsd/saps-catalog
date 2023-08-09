@@ -11,9 +11,7 @@ import saps.catalog.core.jdbc.exceptions.JDBCCatalogException;
 import saps.common.core.model.SapsImage;
 import saps.common.core.model.SapsLandsatImage;
 import saps.common.core.model.SapsUser;
-import saps.common.core.model.SapsUserJob;
 import saps.common.core.model.enums.ImageTaskState;
-import saps.common.core.model.enums.JobState;
 
 public class JDBCCatalogUtil {
 
@@ -67,41 +65,6 @@ public class JDBCCatalogUtil {
       }
     }
     return imageTasks;
-  }
-
-  public static List<SapsUserJob> extractSapsUserJob(ResultSet rs, boolean withoutTasks) throws JDBCCatalogException {
-    List<SapsUserJob> userJobs = new ArrayList<SapsUserJob>();
-    while (true) {
-
-      try {
-        if (!rs.next())
-          break;
-
-        List<String> tasksIds = new ArrayList<>();
-        if (!withoutTasks)
-          tasksIds = Arrays.asList(
-              rs.getString(JDBCCatalogConstants.Tables.Job.TASKS_IDS).replace("{", "").replace("}", "").split(","));
-
-        userJobs.add(
-            new SapsUserJob(
-                rs.getString(JDBCCatalogConstants.Tables.Job.ID),
-                rs.getString(JDBCCatalogConstants.Tables.Job.LOWER_LEFT_LATITUDE),
-                rs.getString(JDBCCatalogConstants.Tables.Job.LOWER_LEFT_LONGITUDE),
-                rs.getString(JDBCCatalogConstants.Tables.Job.UPPER_RIGHT_LATITUDE),
-                rs.getString(JDBCCatalogConstants.Tables.Job.UPPER_RIGHT_LONGITUDE),
-                JobState.getStateFromStr(rs.getString(JDBCCatalogConstants.Tables.Job.STATE)),
-                rs.getString(JDBCCatalogConstants.Tables.Job.USER_EMAIL),
-                rs.getString(JDBCCatalogConstants.Tables.Job.JOB_LABEL),
-                rs.getDate(JDBCCatalogConstants.Tables.Job.START_DATE),
-                rs.getDate(JDBCCatalogConstants.Tables.Job.END_DATE),
-                rs.getInt(JDBCCatalogConstants.Tables.Job.PRIORITY),
-                tasksIds,
-                rs.getTimestamp(JDBCCatalogConstants.Tables.Job.CREATION_TIME)));
-      } catch (SQLException e) {
-        throw new JDBCCatalogException("Error while extract task", e);
-      }
-    }
-    return userJobs;
   }
 
   public static SapsLandsatImage extractSapsImages(ResultSet rs) throws JDBCCatalogException {
