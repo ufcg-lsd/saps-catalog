@@ -189,7 +189,7 @@ public class JDBCCatalogConstants {
           + " WHERE "
           + JDBCCatalogConstants.Tables.User.EMAIL
           + " = ?";
-
+    
       public static final String TASKS_BY_STATE_ORDER_BY_PRIORITY_ASC = "SELECT * FROM "
           + JDBCCatalogConstants.TablesName.TASKS
           + " WHERE "

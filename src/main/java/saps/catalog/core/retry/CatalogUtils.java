@@ -72,7 +72,6 @@ public class CatalogUtils {
    * @param task       task to be update
    */
   public static void addTimestampTask(Catalog imageStore, SapsImage task) {
-    //review this method. take a look at the older version
     imageStore.addStateChangeTime(task.getTaskId(), task.getState(), task.getUpdateTime());
   }
 
@@ -113,8 +112,6 @@ public class CatalogUtils {
     return imageStore.getUserByEmail(userEmail);
   }
 
- 
-
   /**
    * This function adds new task.
    *
@@ -152,7 +149,6 @@ public class CatalogUtils {
    * 
    */
   public static SapsLandsatImage validateLandsatImage(Catalog imageStore, String region, Date date, String message) {
-    // SQL QUERY, if we got the image return TRUE, else return FALSE
     LOGGER.info(message);
     return imageStore.getLandsatImages(region, date);
   }

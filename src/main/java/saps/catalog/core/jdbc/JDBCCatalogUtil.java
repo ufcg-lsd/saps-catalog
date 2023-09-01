@@ -4,7 +4,6 @@ package saps.catalog.core.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import saps.catalog.core.jdbc.exceptions.JDBCCatalogException;

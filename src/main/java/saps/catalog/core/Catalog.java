@@ -88,13 +88,6 @@ public interface Catalog {
   void addStateChangeTime(String taskId, ImageTaskState state, Timestamp timestamp)
       throws CatalogException;
 
-  // FIXME: by manel. we want to know the possible values of the parameters. which
-  // ones are
-  // mandatory? can we use
-  // null or an empty strings?
-
-  // FIXME: what if the user is added twice?
-
   /**
    * It adds a new user to this {@code Catalog}.
    *
@@ -120,11 +113,6 @@ public interface Catalog {
  
   void updateImageTask(SapsImage imageTask) throws CatalogException;
 
-  // FIXME: we should explain we return an empty list in some cases
-  /**
-   * @return
-   * @throws CatalogException
-   */
   List<SapsImage> getAllTasks() throws CatalogException;
 
   SapsLandsatImage getLandsatImages(String region, Date date) throws CatalogException;
@@ -138,7 +126,6 @@ public interface Catalog {
   void removeStateChangeTime(String taskId, ImageTaskState state, Timestamp timestamp)
       throws CatalogException;
 
-  // FIXME: it may return an empty list, right? doc-it
   List<SapsImage> filterTasks(
       ImageTaskState state,
       String region,
