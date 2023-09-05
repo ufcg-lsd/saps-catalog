@@ -17,14 +17,13 @@ public class JDBCCatalogUtil {
   public static SapsUser extractSapsUser(ResultSet rs) throws JDBCCatalogException {
     SapsUser sebalUser = null;
     try {
-      sebalUser =
-          new SapsUser(
-              rs.getString(JDBCCatalogConstants.Tables.User.EMAIL),
-              rs.getString(JDBCCatalogConstants.Tables.User.NAME),
-              rs.getString(JDBCCatalogConstants.Tables.User.PASSWORD),
-              rs.getBoolean(JDBCCatalogConstants.Tables.User.ENABLE),
-              rs.getBoolean(JDBCCatalogConstants.Tables.User.NOTIFY),
-              rs.getBoolean(JDBCCatalogConstants.Tables.User.ADMIN_ROLE));
+      sebalUser = new SapsUser(
+          rs.getString(JDBCCatalogConstants.Tables.User.EMAIL),
+          rs.getString(JDBCCatalogConstants.Tables.User.NAME),
+          rs.getString(JDBCCatalogConstants.Tables.User.PASSWORD),
+          rs.getBoolean(JDBCCatalogConstants.Tables.User.ENABLE),
+          rs.getBoolean(JDBCCatalogConstants.Tables.User.NOTIFY),
+          rs.getBoolean(JDBCCatalogConstants.Tables.User.ADMIN_ROLE));
     } catch (SQLException e) {
       throw new JDBCCatalogException("Error while extract user", e);
     }
@@ -36,7 +35,8 @@ public class JDBCCatalogUtil {
     List<SapsImage> imageTasks = new ArrayList<>();
     while (true) {
       try {
-        if (!rs.next()) break;
+        if (!rs.next())
+          break;
         imageTasks.add(
             new SapsImage(
                 rs.getString(JDBCCatalogConstants.Tables.Task.ID),
@@ -68,15 +68,16 @@ public class JDBCCatalogUtil {
 
   public static SapsLandsatImage extractSapsImages(ResultSet rs) throws JDBCCatalogException {
     SapsLandsatImage sapsLandImage = null;
-    while(true) {
+    while (true) {
       try {
-        if (!rs.next()) break;
-	  sapsLandImage =
-          new SapsLandsatImage(
-          rs.getString(JDBCCatalogConstants.Tables.LandsatImages.LANDSAT_KEY));
+        if (!rs.next())
+          break;
+        sapsLandImage = new SapsLandsatImage(
+            rs.getString(JDBCCatalogConstants.Tables.LandsatImages.LANDSAT_KEY));
       } catch (SQLException e) {
         throw new JDBCCatalogException("Error while extract landsat images", e);
       }
-    } return sapsLandImage;
+    }
+    return sapsLandImage;
   }
 }

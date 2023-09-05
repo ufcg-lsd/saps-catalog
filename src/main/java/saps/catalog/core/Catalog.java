@@ -14,21 +14,6 @@ import saps.common.core.model.enums.ImageTaskState;
 
 public interface Catalog {
 
-  // FIXME: maybe, refactor related information into a separated data structured,
-  // e.g.:
-  // satellite data: dataset, region and date.
-  // - SAPS schema: taskID, priority, userEmail.
-  // - versions of the processing step algorithms: inputdownloadingPhaseTag,
-  // preprocessingPhaseTag
-  // and processingPhaseTag.<br>
-  // - Docker: digestInputdownloading, digestPreprocessing and digestProcessing.
-  // FIXME: by manel. I think we can use an UUID instead of the taskId string
-  // FIXME: by manel. I think we can use an ENUM instead of the dataset string
-
-  // FIXME: verify and doc the high priority (0 or 31?)
-
-  // FIXME: by manel. do we really need this *phaseTag parameters?
-
   /**
    * It adds a new Task into this {@code Catalog}.<br>
    *
@@ -103,13 +88,6 @@ public interface Catalog {
   void addStateChangeTime(String taskId, ImageTaskState state, Timestamp timestamp)
       throws CatalogException;
 
-  // FIXME: by manel. we want to know the possible values of the parameters. which
-  // ones are
-  // mandatory? can we use
-  // null or an empty strings?
-
-  // FIXME: what if the user is added twice?
-
   /**
    * It adds a new user to this {@code Catalog}.
    *
@@ -132,15 +110,9 @@ public interface Catalog {
       boolean adminRole)
       throws CatalogException;
 
-  // FIXME: i think we should throw an exception when there is no imageTask in the
-  // Catalog
+ 
   void updateImageTask(SapsImage imageTask) throws CatalogException;
 
-  // FIXME: we should explain we return an empty list in some cases
-  /**
-   * @return
-   * @throws CatalogException
-   */
   List<SapsImage> getAllTasks() throws CatalogException;
 
   SapsLandsatImage getLandsatImages(String region, Date date) throws CatalogException;
@@ -149,14 +121,11 @@ public interface Catalog {
 
   SapsImage getTaskById(String taskId) throws CatalogException, TaskNotFoundException;
 
-  // FIXME: what if the userEmail is null? empty string? (doc it)
   SapsUser getUserByEmail(String userEmail) throws CatalogException, UserNotFoundException;
 
-  // FIXME: what if the taskId does not exist in the catalog
   void removeStateChangeTime(String taskId, ImageTaskState state, Timestamp timestamp)
       throws CatalogException;
 
-  // FIXME: it may return an empty list, right? doc-it
   List<SapsImage> filterTasks(
       ImageTaskState state,
       String region,
@@ -167,15 +136,14 @@ public interface Catalog {
       String processingTag)
       throws CatalogException;
 
-  List<SapsImage> getTasksOngoingWithPagination(String search, Integer page, Integer size,
-      String sortField, String sortOrder)
-      throws CatalogException;
+    List<SapsImage> getTasksCompletedWithPagination(String search, Integer page, Integer size, String sortField,
+        String sortOrder);
 
-  List<SapsImage> getTasksCompletedWithPagination(String search, Integer page, Integer size,
-      String sortField, String sortOrder)
-      throws CatalogException;
+    List<SapsImage> getTasksOngoingWithPagination(String search, Integer page, Integer size, String sortField,
+        String sortOrder);
+    
+    Integer getCountCompletedTasks(String search) throws CatalogException;
 
-  Integer getCountOngoingTasks(String search) throws CatalogException;
+    Integer getCountOngoingTasks(String search) throws CatalogException;
 
-  Integer getCountCompletedTasks(String search) throws CatalogException;
 }
