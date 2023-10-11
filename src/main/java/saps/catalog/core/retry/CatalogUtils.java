@@ -1,6 +1,7 @@
 /* (C)2020 */
 package saps.catalog.core.retry;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -221,9 +222,10 @@ public class CatalogUtils {
       String preprocessingPhaseTag,
       String processingPhaseTag,
       String message) {
-
+    
     LOGGER.info(message);
-    return imageStore.filterTasks(ImageTaskState.ARCHIVED, region, initDate, endDate, message, preprocessingPhaseTag, processingPhaseTag);
+
+    return imageStore.filterTasks(ImageTaskState.ARCHIVED, region, initDate, endDate, inputdownloadingPhaseTag, preprocessingPhaseTag, processingPhaseTag);
   }
 
   /**

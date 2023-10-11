@@ -476,6 +476,11 @@ public class JDBCCatalog implements Catalog {
     PreparedStatement queryStatement = null;
     Connection connection = null;
 
+    LOGGER.info("Filtering tasks with those infos: " + "State: " + state
+    + " region: " + region + " initDate: " + initDate + " endDate: " + endDate
+    + "inputGatTag: " + inputGathering + " preProcTag: " + preprocessingTag + " processingTag: "
+    + processingTag);
+
     try {
       connection = getConnection();
 
