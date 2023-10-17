@@ -9,8 +9,10 @@ import saps.catalog.core.exceptions.TaskNotFoundException;
 import saps.catalog.core.exceptions.UserNotFoundException;
 import saps.common.core.model.SapsImage;
 import saps.common.core.model.SapsUser;
+import saps.common.core.model.SapsUserJob;
 import saps.common.core.model.SapsLandsatImage;
 import saps.common.core.model.enums.ImageTaskState;
+import saps.common.core.model.enums.JobState;
 
 public interface Catalog {
 
@@ -145,6 +147,8 @@ public interface Catalog {
 
   SapsLandsatImage getLandsatImages(String region, Date date) throws CatalogException;
 
+  void insertJobTask(String taskId, String jobId) throws CatalogException;
+
   List<SapsImage> getTasksByState(ImageTaskState... tasksStates) throws CatalogException;
 
   SapsImage getTaskById(String taskId) throws CatalogException, TaskNotFoundException;
@@ -167,15 +171,58 @@ public interface Catalog {
       String processingTag)
       throws CatalogException;
 
-  List<SapsImage> getTasksOngoingWithPagination(String search, Integer page, Integer size,
-      String sortField, String sortOrder)
+  SapsUserJob addJob(
+      String jobId,
+      String lowerLeftLatitude,
+      String lowerLeftLongitude,
+      String upperRightLatitude,
+      String upperRightLongitude,
+      String userEmail,
+      String jobLabel,
+      Date startDate,
+      Date endDate,
+      int priority,
+      List<String> taskIds)
       throws CatalogException;
 
-  List<SapsImage> getTasksCompletedWithPagination(String search, Integer page, Integer size,
-      String sortField, String sortOrder)
+  void updateUserJob(String jobId, JobState state) throws CatalogException;
+
+  List<SapsUserJob> getUserJobs(
+      JobState state,
+      String search,
+      Integer page,
+      Integer size,
+      String sortField,
+      String sortOrder,
+      boolean withoutTasks,
+      boolean recoverOngoing,
+      boolean recoverCompleted)
       throws CatalogException;
 
-  Integer getCountOngoingTasks(String search) throws CatalogException;
+  Integer getUserJobsCount(
+      JobState state,
+      String search,
+      boolean recoverOngoing,
+      boolean recoverCompleted)
+      throws CatalogException;
 
-  Integer getCountCompletedTasks(String search) throws CatalogException;
+  List<SapsImage> getUserJobTasks(
+      String jobId,
+      ImageTaskState state,
+      String search,
+      Integer page,
+      Integer size,
+      String sortField,
+      String sortOrder,
+      boolean recoverOngoing,
+      boolean recoverCompleted)
+      throws CatalogException;
+
+  Integer getUserJobTasksCount(
+      String jobId,
+      ImageTaskState state,
+      String search,
+      boolean recoverOngoing,
+      boolean recoverCompleted)
+      throws CatalogException;
 }
